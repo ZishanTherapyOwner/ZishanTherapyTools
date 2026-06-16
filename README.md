@@ -7,4 +7,4 @@ install Termux from F-Droid
 in Termux:
 
 ```bash
-curl -sLO [https://raw.githubusercontent.com/ZishanCloud/ZishanTherapyTools/main/Termux/setup.sh](https://raw.githubusercontent.com/ZishanCloud/ZishanTherapyTools/main/Termux/setup.sh) && bash setup.sh
+curl -sLO https://raw.githubusercontent.com/ZishanTherapyOwner/ZishanTherapyTools/main/Termux/setup.sh && bash setup.sh
