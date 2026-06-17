@@ -20,6 +20,7 @@ menu_setup() {
         echo "1. Basic Termux Setup"
         echo "2. Install Platform Tools"
         echo "3. Termux Setup Storage"
+        echo "4. Install MiUnlockTool (Xiaomi)"
         echo "9. Back to Main Menu"
         echo "0. Exit Tool"
         echo "========================================="
@@ -53,6 +54,16 @@ menu_setup() {
                 echo "[✔] Done!"
                 pause_menu
                 ;;
+            4)
+                clear
+                echo "[*] Installing MiUnlockTool by offici5l..."
+                # --- ADD COMMANDS BELOW ---
+                pkg install curl wget termux-api -y
+                curl -sL https://raw.githubusercontent.com/offici5l/MiUnlockTool/main/.install | bash
+                # --- ADD COMMANDS ABOVE ---
+                echo "[✔] Done!"
+                pause_menu
+                ;;
             9)
                 break # এটি চাপলে আগের মেনুতে ফিরে যাবে
                 ;;
@@ -72,7 +83,7 @@ menu_adb() {
     while true; do
         clear
         echo "========================================="
-        echo "        ADB MENU - Zishan Therapy        "
+        echo "         ADB MENU - Zishan Therapy       "
         echo "========================================="
         echo "1. Check ADB Devices"
         echo "2. Reboot to Recovery"
@@ -132,6 +143,7 @@ menu_fastboot() {
         echo "2. Reboot to System"
         echo "3. Flash boot"
         echo "4. Flash init_boot"
+        echo "5. Run MiUnlockTool (Xiaomi Bootloader)"
         echo "9. Back to Main Menu"
         echo "0. Exit Tool"
         echo "========================================="
@@ -146,7 +158,7 @@ menu_fastboot() {
                 # ৩ সেকেন্ডের জন্য কমান্ডটি রান করবে
                 timeout 15s termux-fastboot devices
                 
-                # যদি ৩ সেকেন্ড পার হয়ে যায় এবং কমান্ড আটকে থাকে (Timeout Error 124)
+                # যদি ৩ সেকেন্ড পার হয়ে যায় এবং কমান্ড আটকে থাকে (Timeout Error 124)
                 if [ $? -eq 124 ]; then
                     echo ""
                     echo "[!] No fastboot device detected or connection timed out!"
@@ -163,7 +175,7 @@ menu_fastboot() {
                 # ৩ সেকেন্ডের জন্য কমান্ডটি রান করবে
                 timeout 15s termux-fastboot reboot
                 
-                # যদি ৩ সেকেন্ড পার হয়ে যায় এবং কমান্ড আটকে থাকে (Timeout Error 124)
+                # যদি ৩ সেকেন্ড পার হয়ে যায় এবং কমান্ড আটকে থাকে (Timeout Error 124)
                 if [ $? -eq 124 ]; then
                     echo ""
                     echo "[!] No fastboot device detected or connection timed out!"
@@ -185,7 +197,7 @@ menu_fastboot() {
                     echo "[✔] File found: $BOOT_IMG"
                     echo "[*] Checking for connected fastboot device (waiting 3s)..."
                     
-                    # ২. শুধু ডিভাইস চেক করার জন্য ৩ সেকেন্ড সময় নেবে (ফ্ল্যাশের জন্য নয়)
+                    # ২. শুধু ডিভাইস চেক করার জন্য ৩ সেকেন্ড সময় নেবে (ফ্ল্যাশের জন্য নয়)
                     timeout 15s termux-fastboot devices > /dev/null 2>&1
                     
                     if [ $? -eq 124 ]; then
@@ -194,7 +206,7 @@ menu_fastboot() {
                         echo "[!] Error: No fastboot device detected!"
                         echo "Please connect your phone in fastboot mode and try again."
                     else
-                        # ৩. ডিভাইস পেলে কোনো টাইমআউট ছাড়া ফ্ল্যাশ করবে (যত সময় লাগুক)
+                        # ৩. ডিভাইস পেলে কোনো টাইমআউট ছাড়া ফ্ল্যাশ করবে (যত সময় লাগুক)
                         echo "[✔] Device detected!"
                         echo "[*] Flashing in progress. Please do not disconnect..."
                         
@@ -225,7 +237,7 @@ menu_fastboot() {
                     echo "[✔] File found: $INIT_BOOT_IMG"
                     echo "[*] Checking for connected fastboot device (waiting 3s)..."
                     
-                    # ২. শুধু ডিভাইস চেক করার জন্য ৩ সেকেন্ড সময় নেবে (ফ্ল্যাশের জন্য নয়)
+                    # ২. শুধু ডিভাইস চেক করার জন্য ৩ সেকেন্ড সময় নেবে (ফ্ল্যাশের জন্য নয়)
                     timeout 15s termux-fastboot devices > /dev/null 2>&1
                     
                     if [ $? -eq 124 ]; then
@@ -234,7 +246,7 @@ menu_fastboot() {
                         echo "[!] Error: No fastboot device detected!"
                         echo "Please connect your phone in fastboot mode and try again."
                     else
-                        # ৩. ডিভাইস পেলে কোনো টাইমআউট ছাড়া ফ্ল্যাশ করবে (যত সময় লাগুক)
+                        # ৩. ডিভাইস পেলে কোনো টাইমআউট ছাড়া ফ্ল্যাশ করবে (যত সময় লাগুক)
                         echo "[✔] Device detected!"
                         echo "[*] Flashing in progress. Please do not disconnect..."
                         
@@ -249,6 +261,14 @@ menu_fastboot() {
                     echo "[!] Please put the minit_boot.img file in your Downloads folder and try again."
                 fi
                 
+                # --- ADD COMMANDS ABOVE ---
+                pause_menu
+                ;;
+            5)
+                clear
+                echo "[*] Launching MiUnlockTool..."
+                # --- ADD COMMANDS BELOW ---
+                miunlock
                 # --- ADD COMMANDS ABOVE ---
                 pause_menu
                 ;;
