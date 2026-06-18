@@ -90,7 +90,7 @@ goto %back_to%
 if not exist "%ADB%" goto MissingTools
 cls
 echo ===================================================
-echo             DELETE MOBILE DATA (PHONE)
+echo              DELETE MOBILE DATA (PHONE)
 echo ===================================================
 echo.
 echo [*] Cleaning ZishanTherapy directory from device...
@@ -104,7 +104,7 @@ goto MainMenu
 :DeletePcData
 cls
 echo ===================================================
-echo             DELETE PC DATA (PC CLEANUP)
+echo              DELETE PC DATA (PC CLEANUP)
 echo ===================================================
 echo.
 echo [!] WARNING: This will delete all downloaded folders, tools, 
@@ -134,7 +134,7 @@ goto MainMenu
 :DownloadMenu
 cls
 echo =========================================
-echo       DOWNLOAD MENU - Zishan Therapy     
+echo        DOWNLOAD MENU - Zishan Therapy      
 echo =========================================
 echo  [1] Download Platform Tools (Auto Extract)
 echo  [2] Download Scrcpy (Screen Mirroring)
@@ -383,11 +383,12 @@ echo  [4] Reboot to Bootloader
 echo -----------------------------------------
 echo  [5] ADB Push File (Drag ^& Drop)
 echo  [6] ADB Install APK (Drag ^& Drop)
-echo  [7] Enable Multiuser (Set Custom Count)
+echo  [7] Enable Multiuser (Permanent via Magisk)
+echo  [8] Get ADB Device Info (Version/Build)
 echo -----------------------------------------
 echo  [S] Start Scrcpy Mirroring
 echo -----------------------------------------
-echo  [9] Back to Main Menu
+echo  [99] Back to Main Menu
 echo  [0] Exit Tool
 echo =========================================
 set /p choice="Enter your choice: "
@@ -399,9 +400,10 @@ if "%choice%"=="4" goto AdbOpt4
 if "%choice%"=="5" goto AdbOpt5
 if "%choice%"=="6" goto AdbOpt6
 if "%choice%"=="7" goto AdbOpt7
+if "%choice%"=="8" goto AdbOpt8
 if /i "%choice%"=="s" set "back_to=AdbMenu"
 if /i "%choice%"=="s" goto RunScrcpy
-if "%choice%"=="9" goto MainMenu
+if "%choice%"=="99" goto MainMenu
 if "%choice%"=="0" exit
 goto AdbMenu
 
@@ -441,7 +443,7 @@ goto AdbMenu
 if not exist "%ADB%" goto MissingTools
 cls
 echo ===================================================
-echo            ADB PUSH (Drag ^& Drop System)
+echo             ADB PUSH (Drag ^& Drop System)
 echo ===================================================
 echo.
 set /p push_file="--^> Drag and drop your file here and press Enter: "
@@ -469,7 +471,7 @@ goto AdbMenu
 if not exist "%ADB%" goto MissingTools
 cls
 echo ===================================================
-echo            ADB INSTALL (Drag ^& Drop System)
+echo             ADB INSTALL (Drag ^& Drop System)
 echo ===================================================
 echo.
 set /p apk_file="--^> Drag and drop your APK file here and press Enter: "
@@ -495,41 +497,78 @@ goto AdbMenu
 if not exist "%ADB%" goto MissingTools
 cls
 echo ===================================================
-echo     ENABLE MULTIUSER (Permanent Root Mode)
+echo      ENABLE MULTIUSER (Permanent via Magisk)
 echo ===================================================
-echo.
-echo [!] NOTE: This feature requires ROOT access on the phone.
-echo Please unlock your phone screen and grant Root/SU permission when prompted.
 echo.
 set /p user_count="--^> Enter maximum user limit (e.g., 4, 10, 100): "
 
 if "%user_count%"=="" set user_count=4
 
 cls
-echo [*] Requesting Root Access...
-echo [*] Remounting system partitions and modifying build.prop permanently...
+echo [*] Checking Root Access...
+echo [!] PLEASE UNLOCK YOUR PHONE SCREEN AND TAP "GRANT" IF PROMPTED!
 echo.
 
+:: Test Root access first
+"%ADB%" shell "su -c 'echo ROOT_GRANTED'" > root_check.tmp 2>nul
+set "ROOT_STATUS="
+for /f "usebackq delims=" %%A in (`type root_check.tmp 2^>nul`) do set "ROOT_STATUS=%%A"
+del root_check.tmp 2>nul
+
+:: Check if the output string contains ROOT_GRANTED
+echo %ROOT_STATUS% | findstr /i "ROOT_GRANTED" >nul
+if errorlevel 1 (
+    echo ---------------------------------------------------
+    echo [X] ERROR: Root Permission Denied or Timed Out!
+    echo [!] Magisk did not get permission. 
+    echo Please try this option again and tap "Grant" on your phone quickly.
+    echo ---------------------------------------------------
+    echo.
+    pause
+    goto AdbMenu
+)
+
+echo [✔] Root Access Confirmed!
+echo [*] Injecting Magisk Boot Script...
+echo.
+
+:: Apply immediately for current session
 "%ADB%" shell "su -c 'settings put global fw.max_users %user_count%'"
 "%ADB%" shell "su -c 'settings put global fw.show_multiuserui 1'"
-"%ADB%" shell "su -c 'setprop fw.max_users %user_count%'"
-"%ADB%" shell "su -c 'setprop fw.show_multiuserui 1'"
 
-"%ADB%" shell "su -c 'echo fw.max_users=%user_count% >> /system/build.prop'" 2>nul
-"%ADB%" shell "su -c 'echo fw.show_multiuserui=1 >> /system/build.prop'" 2>nul
-"%ADB%" shell "su -c 'echo ro.mount.fs=rw >> /system/build.prop'" 2>nul
-
-"%ADB%" shell "su -c 'resetprop -n fw.max_users %user_count%'" 2>nul
-"%ADB%" shell "su -c 'resetprop -n fw.show_multiuserui 1'" 2>nul
+:: Inject into Magisk post-fs-data.d for permanent effect on every boot
+"%ADB%" shell "su -c 'echo \"#!/system/bin/sh\" > /data/adb/post-fs-data.d/zt_multiuser.sh'"
+"%ADB%" shell "su -c 'echo \"resetprop -n fw.max_users %user_count%\" >> /data/adb/post-fs-data.d/zt_multiuser.sh'"
+"%ADB%" shell "su -c 'echo \"resetprop -n fw.show_multiuserui 1\" >> /data/adb/post-fs-data.d/zt_multiuser.sh'"
+"%ADB%" shell "su -c 'chmod 755 /data/adb/post-fs-data.d/zt_multiuser.sh'"
 
 echo ---------------------------------------------------
-echo [✔] Permanent properties injected over Root Shell!
-echo [*] Rebooting device to enforce framework change...
+echo [✔] Magisk Boot Script Injected Successfully!
+echo [*] Rebooting device to apply permanent changes...
 "%ADB%" reboot
 echo.
 echo [~] SUCCESS: Process finished! Device is restarting.
 echo [*] Returning to ADB Menu automatically...
-timeout /t 1 >nul
+timeout /t 2 >nul
+goto AdbMenu
+
+:AdbOpt8
+if not exist "%ADB%" goto MissingTools
+cls
+echo ===================================================
+echo              ADB DEVICE INFORMATION
+echo ===================================================
+echo.
+echo [*] Fetching details from connected device...
+echo ---------------------------------------------------
+<nul set /p="Device Model     : " & "%ADB%" shell getprop ro.product.model
+<nul set /p="Product Code     : " & "%ADB%" shell getprop ro.product.device
+<nul set /p="Android Version  : " & "%ADB%" shell getprop ro.build.version.release
+<nul set /p="Hardware/Board   : " & "%ADB%" shell getprop ro.hardware
+<nul set /p="Build/OS Version : " & "%ADB%" shell getprop ro.build.display.id
+echo ---------------------------------------------------
+echo.
+pause
 goto AdbMenu
 
 :: ==========================================
@@ -680,7 +719,7 @@ goto FastbootMenu
 if not exist "%FASTBOOT%" goto MissingTools
 cls
 echo ===================================================
-echo            FLASH BOOT (Drag ^& Drop System)
+echo             FLASH BOOT (Drag ^& Drop System)
 echo ===================================================
 echo.
 set /p img_file="--^> Drag and drop your BOOT .img file here: "
@@ -701,7 +740,7 @@ pause & goto FastbootMenu
 if not exist "%FASTBOOT%" goto MissingTools
 cls
 echo ===================================================
-echo          FLASH INIT_BOOT (Drag ^& Drop System)
+echo           FLASH INIT_BOOT (Drag ^& Drop System)
 echo ===================================================
 echo.
 set /p img_file="--^> Drag and drop your INIT_BOOT .img file here: "
@@ -722,7 +761,7 @@ pause & goto FastbootMenu
 if not exist "%FASTBOOT%" goto MissingTools
 cls
 echo ===================================================
-echo          FLASH RECOVERY (Drag ^& Drop System)
+echo           FLASH RECOVERY (Drag ^& Drop System)
 echo ===================================================
 echo.
 set /p img_file="--^> Drag and drop your RECOVERY .img file here: "
@@ -743,7 +782,7 @@ pause & goto FastbootMenu
 if not exist "%FASTBOOT%" goto MissingTools
 cls
 echo ===================================================
-echo           FLASH VBMETA (Drag ^& Drop System)
+echo            FLASH VBMETA (Drag ^& Drop System)
 echo ===================================================
 echo.
 set /p img_file="--^> Drag and drop your VBMETA .img file here: "
@@ -766,14 +805,14 @@ pause & goto FastbootMenu
 :SideloadMenu
 cls
 echo =========================================
-echo       SIDELOAD MENU - Zishan Therapy     
+echo        SIDELOAD MENU - Zishan Therapy      
 echo =========================================
 echo  [1] Check Sideload Devices
 echo  [2] ADB Sideload ROM/ZIP (Drag ^& Drop)
 echo -----------------------------------------
 echo  [S] Start Scrcpy Mirroring
 echo -----------------------------------------
-echo  [9] Back to Main Menu
+echo  [99] Back to Main Menu
 echo  [0] Exit Tool
 echo =========================================
 set /p choice="Enter your choice: "
@@ -782,7 +821,7 @@ if "%choice%"=="1" goto SlOpt1
 if "%choice%"=="2" goto SlOpt2
 if /i "%choice%"=="s" set "back_to=SideloadMenu"
 if /i "%choice%"=="s" goto RunScrcpy
-if "%choice%"=="9" goto MainMenu
+if "%choice%"=="99" goto MainMenu
 if "%choice%"=="0" exit
 goto SideloadMenu
 
@@ -798,7 +837,7 @@ goto SideloadMenu
 if not exist "%ADB%" goto MissingTools
 cls
 echo ===================================================
-echo           ADB SIDELOAD (Drag ^& Drop System)
+echo            ADB SIDELOAD (Drag ^& Drop System)
 echo ===================================================
 echo Please ensure phone is in Recovery -^> Apply update from ADB.
 echo.
