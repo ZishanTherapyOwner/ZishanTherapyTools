@@ -90,7 +90,7 @@ goto %back_to%
 if not exist "%ADB%" goto MissingTools
 cls
 echo ===================================================
-echo              DELETE MOBILE DATA (PHONE)
+echo               DELETE MOBILE DATA (PHONE)
 echo ===================================================
 echo.
 echo [*] Cleaning ZishanTherapy directory from device...
@@ -104,11 +104,11 @@ goto MainMenu
 :DeletePcData
 cls
 echo ===================================================
-echo              DELETE PC DATA (PC CLEANUP)
+echo               DELETE PC DATA (PC CLEANUP)
 echo ===================================================
 echo.
 echo [!] WARNING: This will delete all downloaded folders, tools, 
-echo     APKs, and ZIP files next to this script!
+echo      APKs, and ZIP files next to this script!
 echo [!] Only this main batch script file will remain.
 echo.
 set /p confirm="Are you sure you want to completely clean up? (Y/N): "
@@ -134,7 +134,7 @@ goto MainMenu
 :DownloadMenu
 cls
 echo =========================================
-echo        DOWNLOAD MENU - Zishan Therapy      
+echo         DOWNLOAD MENU - Zishan Therapy     
 echo =========================================
 echo  [1] Download Platform Tools (Auto Extract)
 echo  [2] Download Scrcpy (Screen Mirroring)
@@ -172,55 +172,121 @@ goto DownloadMenu
 
 :DloadOpt1
 cls
-echo [*] Try 1: Downloading Official Platform Tools via GitHub Release...
+if exist "%~dp0platform-tools\adb.exe" (
+    echo [*] Platform Tools is already installed!
+    echo [*] No need to download again.
+    echo.
+    pause
+    goto DownloadMenu
+)
+echo [*] Downloading Official Platform Tools (Google Direct Link)...
 echo ----------------------------------------------------------------------
-curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/adb-setup-1.3.zip" -o platform-tools.zip
+curl -L "https://dl.google.com/android/repository/platform-tools-latest-windows.zip" -o platform-tools.zip
 echo ----------------------------------------------------------------------
-if exist platform-tools.zip goto ExtractTools
-
-echo.
-echo [!] GitHub Link Failed! Try 2: Falling back to Google Drive...
-curl -L https://dl.google.com/android/repository/platform-tools-latest-windows.zip -o platform-tools.zip
-if exist platform-tools.zip goto ExtractTools
-pause
-goto DownloadMenu
+if not exist platform-tools.zip (
+    echo [!] Download Failed! Check your internet connection.
+    pause
+    goto DownloadMenu
+)
 
 :ExtractTools
 echo.
 echo [*] Extracting files (Please wait)...
-powershell -command "Expand-Archive -Force -Path 'platform-tools.zip' -DestinationPath '.'"
-echo [*] Cleaning up...
-del platform-tools.zip
+if exist "pt_temp" rmdir /s /q "pt_temp"
+powershell -command "Expand-Archive -Force -Path 'platform-tools.zip' -DestinationPath 'pt_temp'"
+
+echo [*] Organizing Platform Tools folder...
+if exist "platform-tools" rmdir /s /q "platform-tools"
+mkdir "platform-tools"
+
+if exist "pt_temp\platform-tools\adb.exe" (
+    xcopy /E /Y /H /Q "pt_temp\platform-tools\*.*" "platform-tools\" >nul
+) else if exist "pt_temp\adb.exe" (
+    xcopy /E /Y /H /Q "pt_temp\*.*" "platform-tools\" >nul
+) else (
+    for /f "delims=" %%i in ('dir /b /s "pt_temp\adb.exe" 2^>nul') do (
+        xcopy /E /Y /H /Q "%%~dpi*.*" "platform-tools\" >nul
+    )
+)
+
+:: Error checking after extraction
+if not exist "platform-tools\adb.exe" (
+    echo.
+    echo [X] ERROR: adb.exe not found! Zip file might be corrupt or invalid.
+    rmdir /s /q "platform-tools" 2>nul
+) else (
+    echo.
+    echo [~] SUCCESS: Platform Tools Installed perfectly!
+)
+
+echo [*] Cleaning up temporary files...
+rmdir /s /q "pt_temp" 2>nul
+del /f /q "platform-tools.zip" 2>nul
 echo.
-echo [~] SUCCESS: Platform Tools Installed!
 pause
 goto DownloadMenu
 
 :DloadOpt2
 cls
-echo [*] Try 1: Downloading Scrcpy...
+if exist "%~dp0scrcpy\scrcpy.exe" (
+    echo [*] Scrcpy is already installed!
+    echo [*] No need to download again.
+    echo.
+    pause
+    goto DownloadMenu
+)
+echo [*] Downloading Scrcpy...
 echo ----------------------------------------------------------------------
 curl -L https://github.com/Genymobile/scrcpy/releases/download/v2.4/scrcpy-win64-v2.4.zip -o scrcpy.zip
 echo ----------------------------------------------------------------------
-if exist scrcpy.zip goto ExtractScrcpy
-echo.
-echo [!] Direct Link Failed! Returning...
-pause
-goto DownloadMenu
+if not exist scrcpy.zip (
+    echo [!] Download Failed! Check your internet connection.
+    pause
+    goto DownloadMenu
+)
 
 :ExtractScrcpy
 echo.
 echo [*] Extracting Scrcpy files (Please wait)...
-powershell -command "Expand-Archive -Force -Path 'scrcpy.zip' -DestinationPath 'scrcpy'"
+if exist "scrcpy_temp" rmdir /s /q "scrcpy_temp"
+powershell -command "Expand-Archive -Force -Path 'scrcpy.zip' -DestinationPath 'scrcpy_temp'"
+
+echo [*] Organizing Scrcpy folder...
+if exist "scrcpy" rmdir /s /q "scrcpy"
+mkdir "scrcpy"
+
+if exist "scrcpy_temp\scrcpy.exe" (
+    xcopy /E /Y /H /Q "scrcpy_temp\*.*" "scrcpy\" >nul
+) else (
+    for /f "delims=" %%i in ('dir /b /s "scrcpy_temp\scrcpy.exe" 2^>nul') do (
+        xcopy /E /Y /H /Q "%%~dpi*.*" "scrcpy\" >nul
+    )
+)
+
+if not exist "scrcpy\scrcpy.exe" (
+    echo.
+    echo [X] ERROR: scrcpy.exe not found!
+    rmdir /s /q "scrcpy" 2>nul
+) else (
+    echo.
+    echo [~] SUCCESS: Scrcpy Installed perfectly in the 'scrcpy' folder!
+)
+
 echo [*] Cleaning up...
-del scrcpy.zip
+rmdir /s /q "scrcpy_temp" 2>nul
+del /f /q "scrcpy.zip" 2>nul
 echo.
-echo [~] SUCCESS: Scrcpy Installed in the 'scrcpy' folder!
 pause
 goto DownloadMenu
 
 :DloadOpt3
 cls
+if exist "%~dp0MagiskManager.apk" (
+    echo [*] MagiskManager.apk is already downloaded!
+    echo.
+    pause
+    goto DownloadMenu
+)
 echo [*] Try 1: Fetching Magisk Manager via Official GitHub Latest Link...
 set "MAGISK_URL="
 for /f "delims=" %%i in ('powershell -command "(Invoke-RestMethod -Uri 'https://api.github.com/repos/topjohnwu/Magisk/releases/latest').assets | Where-Object {$_.name -like '*.apk'} | Select-Object -ExpandProperty browser_download_url" 2^>nul') do set "MAGISK_URL=%%i"
@@ -242,12 +308,18 @@ echo ----------------------------------------------------------------------
 
 :MagiskSuccess
 echo.
-echo [~] SUCCESS: MagiskManager.apk process checked!
+echo [~] SUCCESS: MagiskManager.apk is ready!
 pause
 goto DownloadMenu
 
 :DloadOpt4
 cls
+if exist "%~dp0KitsuneMask.apk" (
+    echo [*] KitsuneMask.apk is already downloaded!
+    echo.
+    pause
+    goto DownloadMenu
+)
 echo [*] Try 1: Downloading Kitsune Mask via Your GitHub Release...
 echo ----------------------------------------------------------------------
 curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/com.termux.api_1002.apk" -o KitsuneMask.apk
@@ -264,12 +336,18 @@ echo ----------------------------------------------------------------------
 
 :KitsuneSuccess
 echo.
-echo [~] SUCCESS: KitsuneMask.apk process checked!
+echo [~] SUCCESS: KitsuneMask.apk is ready!
 pause
 goto DownloadMenu
 
 :DloadOpt5
 cls
+if exist "%~dp0RootChecker.apk" (
+    echo [*] RootChecker.apk is already downloaded!
+    echo.
+    pause
+    goto DownloadMenu
+)
 echo [*] Try 1: Downloading Root Checker via Your GitHub Release...
 echo ----------------------------------------------------------------------
 curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/root-checker-6-5-3.apk" -o RootChecker.apk
@@ -286,12 +364,18 @@ echo ----------------------------------------------------------------------
 
 :RootSuccess
 echo.
-echo [~] SUCCESS: RootChecker.apk process checked!
+echo [~] SUCCESS: RootChecker.apk is ready!
 pause
 goto DownloadMenu
 
 :DloadOpt6
 cls
+if exist "%~dp0TermuxAPI.apk" (
+    echo [*] TermuxAPI.apk is already downloaded!
+    echo.
+    pause
+    goto DownloadMenu
+)
 echo [*] Try 1: Downloading Termux API via Your GitHub Release...
 echo ----------------------------------------------------------------------
 curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/com.termux.api_1002.apk" -o TermuxAPI.apk
@@ -308,12 +392,18 @@ echo ----------------------------------------------------------------------
 
 :TermuxApiSuccess
 echo.
-echo [~] SUCCESS: TermuxAPI.apk process checked!
+echo [~] SUCCESS: TermuxAPI.apk is ready!
 pause
 goto DownloadMenu
 
 :DloadOpt7
 cls
+if exist "%~dp0Termux.apk" (
+    echo [*] Termux.apk is already downloaded!
+    echo.
+    pause
+    goto DownloadMenu
+)
 echo [*] Try 1: Downloading Termux via Your GitHub Release...
 echo ----------------------------------------------------------------------
 curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/com.termux_1022.apk" -o Termux.apk
@@ -330,12 +420,18 @@ echo ----------------------------------------------------------------------
 
 :TermuxSuccess
 echo.
-echo [~] SUCCESS: Termux.apk process checked!
+echo [~] SUCCESS: Termux.apk is ready!
 pause
 goto DownloadMenu
 
 :DloadOpt8
 cls
+if exist "%~dp0MagiskHideProps.zip" (
+    echo [*] MagiskHideProps Module ZIP is already downloaded!
+    echo.
+    pause
+    goto DownloadMenu
+)
 echo [*] Try 1: Downloading MagiskHideProps Module ZIP via Your GitHub Release...
 echo ----------------------------------------------------------------------
 curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/MagiskHidePropsConf-v6.1.2.zip" -o MagiskHideProps.zip
@@ -352,12 +448,18 @@ echo ----------------------------------------------------------------------
 
 :PropsSuccess
 echo.
-echo [~] SUCCESS: MagiskHideProps.zip process checked!
+echo [~] SUCCESS: MagiskHideProps.zip is ready!
 pause
 goto DownloadMenu
 
 :DloadOpt9
 cls
+if exist "%~dp07z2601-x64.exe" (
+    echo [*] 7-Zip Installer is already downloaded!
+    echo.
+    pause
+    goto DownloadMenu
+)
 echo [*] Downloading Official 7-Zip Installer...
 echo ----------------------------------------------------------------------
 curl -L https://github.com/ip7z/7zip/releases/download/26.01/7z2601-x64.exe -o 7z2601-x64.exe
@@ -382,9 +484,10 @@ echo  [3] Reboot to Recovery
 echo  [4] Reboot to Bootloader
 echo -----------------------------------------
 echo  [5] ADB Push File (Drag ^& Drop)
-echo  [6] ADB Install APK (Drag ^& Drop)
-echo  [7] Enable Multiuser (Permanent via Magisk)
-echo  [8] Get ADB Device Info (Version/Build)
+echo  [6] ADB Install APK (Normal)
+echo  [7] ADB Install APK (Bypass Low SDK Block)
+echo  [8] Enable Multiuser (Permanent via Magisk)
+echo  [9] Get ADB Device Info (Version/Build)
 echo -----------------------------------------
 echo  [S] Start Scrcpy Mirroring
 echo -----------------------------------------
@@ -401,6 +504,7 @@ if "%choice%"=="5" goto AdbOpt5
 if "%choice%"=="6" goto AdbOpt6
 if "%choice%"=="7" goto AdbOpt7
 if "%choice%"=="8" goto AdbOpt8
+if "%choice%"=="9" goto AdbOpt9
 if /i "%choice%"=="s" set "back_to=AdbMenu"
 if /i "%choice%"=="s" goto RunScrcpy
 if "%choice%"=="99" goto MainMenu
@@ -471,7 +575,7 @@ goto AdbMenu
 if not exist "%ADB%" goto MissingTools
 cls
 echo ===================================================
-echo             ADB INSTALL (Drag ^& Drop System)
+echo             ADB INSTALL (Normal)
 echo ===================================================
 echo.
 set /p apk_file="--^> Drag and drop your APK file here and press Enter: "
@@ -494,6 +598,33 @@ pause
 goto AdbMenu
 
 :AdbOpt7
+if not exist "%ADB%" goto MissingTools
+cls
+echo ===================================================
+echo     ADB INSTALL (Bypass Low Target SDK Block)
+echo ===================================================
+echo.
+set /p apk_file="--^> Drag and drop your APK file here and press Enter: "
+set apk_file=%apk_file:"=%
+
+if not exist "%apk_file%" (
+    echo.
+    echo [!] Error: Invalid path or File not found!
+    pause
+    goto AdbMenu
+)
+
+cls
+echo [*] Installing app (Bypassing low target SDK block)...
+echo [*] Please check your phone screen if any prompt appears...
+echo.
+"%ADB%" install --bypass-low-target-sdk-block "%apk_file%"
+echo.
+echo [~] Process finished!
+pause
+goto AdbMenu
+
+:AdbOpt8
 if not exist "%ADB%" goto MissingTools
 cls
 echo ===================================================
@@ -552,11 +683,11 @@ echo [*] Returning to ADB Menu automatically...
 timeout /t 2 >nul
 goto AdbMenu
 
-:AdbOpt8
+:AdbOpt9
 if not exist "%ADB%" goto MissingTools
 cls
 echo ===================================================
-echo              ADB DEVICE INFORMATION
+echo               ADB DEVICE INFORMATION
 echo ===================================================
 echo.
 echo [*] Fetching details from connected device...
