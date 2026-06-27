@@ -127,68 +127,80 @@ menu_download() {
         case $choice in
             1)
                 clear
-                echo -e "${C_I}[*] Fetching Latest Magisk Manager...${C_R}"
-                MAGISK_URL=$(curl -s https://api.github.com/repos/topjohnwu/Magisk/releases/latest | grep "browser_download_url" | grep "\.apk" | cut -d '"' -f 4 | head -n 1)
-                
-                if [ -z "$MAGISK_URL" ]; then
-                    echo -e "${C_E}[!] Fetch Failed! Check internet connection.${C_R}"
-                else
-                    echo -e "${C_I}[*] Downloading to ZishanTherapy Folder...${C_R}"
-                    curl -L "$MAGISK_URL" -o "$DL_DIR/MagiskManager.apk"
+                APK_PATH="$DL_DIR/MagiskManager.apk"
+                if [ ! -f "$APK_PATH" ]; then
+                    echo -e "${C_I}[*] Fetching Latest Magisk Manager...${C_R}"
+                    MAGISK_URL=$(curl -s https://api.github.com/repos/topjohnwu/Magisk/releases/latest | grep "browser_download_url" | grep "\.apk" | cut -d '"' -f 4 | head -n 1)
                     
-                    if [ -f "$DL_DIR/MagiskManager.apk" ]; then
-                        echo -e "${C_S}[✔] Download Done! Installing to connected device...${C_R}"
-                        termux-adb install -r "$DL_DIR/MagiskManager.apk"
-                        
-                        echo -e "${C_I}[*] Deleting APK from local storage...${C_R}"
-                        rm -f "$DL_DIR/MagiskManager.apk"
-                        echo -e "${C_S}[✔] Cleanup Successful!${C_R}"
+                    if [ -z "$MAGISK_URL" ]; then
+                        echo -e "${C_E}[!] Fetch Failed! Check internet connection.${C_R}"
+                    else
+                        echo -e "${C_I}[*] Downloading to ZishanTherapy Folder...${C_R}"
+                        curl -L "$MAGISK_URL" -o "$APK_PATH"
                     fi
+                else
+                    echo -e "${C_S}[✔] MagiskManager.apk already exists! Skipping download...${C_R}"
+                fi
+
+                # Install Process
+                if [ -f "$APK_PATH" ]; then
+                    echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
+                    termux-adb install -r "$APK_PATH"
+                    echo -e "${C_S}[✔] Installation Process Finished!${C_R}"
                 fi
                 pause_menu
                 ;;
             2)
                 clear
-                echo -e "${C_I}[*] Downloading Kitsune Mask...${C_R}"
-                curl -L "https://github.com/HuskyDG/magisk-files/releases/download/1c93a02d-v26.1/app-release.apk" -o "$DL_DIR/KitsuneMask.apk"
-                
-                if [ -f "$DL_DIR/KitsuneMask.apk" ]; then
-                    echo -e "${C_S}[✔] Download Done! Installing to connected device...${C_R}"
-                    termux-adb install -r "$DL_DIR/KitsuneMask.apk"
-                    
-                    echo -e "${C_I}[*] Deleting APK from local storage...${C_R}"
-                    rm -f "$DL_DIR/KitsuneMask.apk"
-                    echo -e "${C_S}[✔] Cleanup Successful!${C_R}"
+                APK_PATH="$DL_DIR/KitsuneMask.apk"
+                if [ ! -f "$APK_PATH" ]; then
+                    echo -e "${C_I}[*] Downloading Kitsune Mask...${C_R}"
+                    curl -L "https://github.com/HuskyDG/magisk-files/releases/download/1c93a02d-v26.1/app-release.apk" -o "$APK_PATH"
+                else
+                    echo -e "${C_S}[✔] KitsuneMask.apk already exists! Skipping download...${C_R}"
+                fi
+
+                # Install Process
+                if [ -f "$APK_PATH" ]; then
+                    echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
+                    termux-adb install -r "$APK_PATH"
+                    echo -e "${C_S}[✔] Installation Process Finished!${C_R}"
                 fi
                 pause_menu
                 ;;
             3)
                 clear
-                echo -e "${C_I}[*] Downloading Root Checker...${C_R}"
-                curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/root-checker-6-5-3.apk" -o "$DL_DIR/RootChecker.apk"
-                
-                if [ -f "$DL_DIR/RootChecker.apk" ]; then
-                    echo -e "${C_S}[✔] Download Done! Installing to connected device...${C_R}"
-                    termux-adb install -r "$DL_DIR/RootChecker.apk"
-                    
-                    echo -e "${C_I}[*] Deleting APK from local storage...${C_R}"
-                    rm -f "$DL_DIR/RootChecker.apk"
-                    echo -e "${C_S}[✔] Cleanup Successful!${C_R}"
+                APK_PATH="$DL_DIR/RootChecker.apk"
+                if [ ! -f "$APK_PATH" ]; then
+                    echo -e "${C_I}[*] Downloading Root Checker...${C_R}"
+                    curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/root-checker-6-5-3.apk" -o "$APK_PATH"
+                else
+                    echo -e "${C_S}[✔] RootChecker.apk already exists! Skipping download...${C_R}"
+                fi
+
+                # Install Process
+                if [ -f "$APK_PATH" ]; then
+                    echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
+                    termux-adb install -r "$APK_PATH"
+                    echo -e "${C_S}[✔] Installation Process Finished!${C_R}"
                 fi
                 pause_menu
                 ;;
             4)
                 clear
-                echo -e "${C_I}[*] Downloading MultipleAccounts...${C_R}"
-                curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/MultipleAccounts.apk" -o "$DL_DIR/MultipleAccounts.apk"
-                
-                if [ -f "$DL_DIR/MultipleAccounts.apk" ]; then
-                    echo -e "${C_S}[✔] Download Done! Installing to connected device...${C_R}"
-                    termux-adb install -r "$DL_DIR/MultipleAccounts.apk"
-                    
-                    echo -e "${C_I}[*] Deleting APK from local storage...${C_R}"
-                    rm -f "$DL_DIR/MultipleAccounts.apk"
-                    echo -e "${C_S}[✔] Cleanup Successful!${C_R}"
+                APK_PATH="$DL_DIR/MultipleAccounts.apk"
+                if [ ! -f "$APK_PATH" ]; then
+                    echo -e "${C_I}[*] Downloading MultipleAccounts...${C_R}"
+                    curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/MultipleAccounts.apk" -o "$APK_PATH"
+                else
+                    echo -e "${C_S}[✔] MultipleAccounts.apk already exists! Skipping download...${C_R}"
+                fi
+
+                # Install Process
+                if [ -f "$APK_PATH" ]; then
+                    echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
+                    termux-adb install -r "$APK_PATH"
+                    echo -e "${C_S}[✔] Installation Process Finished!${C_R}"
                 fi
                 pause_menu
                 ;;
