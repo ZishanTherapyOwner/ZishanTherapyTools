@@ -113,7 +113,8 @@ menu_download() {
         echo "1. Install Magisk Manager (APK)"
         echo "2. Install Kitsune Mask (APK)"
         echo "3. Install Root Checker (APK)"
-        echo "4. Install MultipleAccounts (APK)"
+        echo "4. Install MultipleAccounts (Normal)"
+        echo "5. Install MultipleAccounts (Bypass Low SDK)"
         echo -e "${C_H}-----------------------------------------${C_R}"
         echo -e " ${C_E}[99]${C_R} Back to Main Menu"
         echo -e " ${C_E}[0]${C_R} Exit Tool"
@@ -142,7 +143,7 @@ menu_download() {
                     echo -e "${C_S}[✔] MagiskManager.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process (NO AUTO DELETE)
+                # Install Process
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
                     termux-adb install -r "$APK_PATH"
@@ -160,7 +161,7 @@ menu_download() {
                     echo -e "${C_S}[✔] KitsuneMask.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process (NO AUTO DELETE)
+                # Install Process
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
                     termux-adb install -r "$APK_PATH"
@@ -178,7 +179,7 @@ menu_download() {
                     echo -e "${C_S}[✔] RootChecker.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process (NO AUTO DELETE)
+                # Install Process
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
                     termux-adb install -r "$APK_PATH"
@@ -196,10 +197,28 @@ menu_download() {
                     echo -e "${C_S}[✔] MultipleAccounts.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process (NO AUTO DELETE)
+                # Install Process (Normal Mode)
                 if [ -f "$APK_PATH" ]; then
-                    echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
+                    echo -e "${C_I}[*] Installing to connected device via OTG (Normal)...${C_R}"
                     termux-adb install -r "$APK_PATH"
+                    echo -e "${C_S}[✔] Installation Process Finished!${C_R}"
+                fi
+                pause_menu
+                ;;
+            5)
+                clear
+                APK_PATH="$DL_DIR/MultipleAccounts.apk"
+                if [ ! -f "$APK_PATH" ]; then
+                    echo -e "${C_I}[*] Downloading MultipleAccounts...${C_R}"
+                    curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/MultipleAccounts.apk" -o "$APK_PATH"
+                else
+                    echo -e "${C_S}[✔] MultipleAccounts.apk already exists! Skipping download...${C_R}"
+                fi
+
+                # Install Process (Bypass Low SDK Mode for Android 14+)
+                if [ -f "$APK_PATH" ]; then
+                    echo -e "${C_I}[*] Installing to connected device via OTG (Bypass Low SDK)...${C_R}"
+                    termux-adb install --bypass-low-target-sdk-block "$APK_PATH"
                     echo -e "${C_S}[✔] Installation Process Finished!${C_R}"
                 fi
                 pause_menu
