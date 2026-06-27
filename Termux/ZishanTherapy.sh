@@ -37,6 +37,13 @@ menu_setup() {
         echo "3. Termux Setup Storage"
         echo "4. MiUnlockTool Setup & Open"
         echo -e "${C_H}-----------------------------------------${C_R}"
+        echo -e "${C_O}   DOWNLOAD & AUTO-INSTALL MENU (OTG)    ${C_R}"
+        echo -e "${C_H}-----------------------------------------${C_R}"
+        echo "5. Install Magisk Manager (APK)"
+        echo "6. Install Kitsune Mask (APK)"
+        echo "7. Install Root Checker (APK)"
+        echo "8. Install MultipleAccounts (APK)"
+        echo -e "${C_H}-----------------------------------------${C_R}"
         echo "9. Back to Main Menu"
         echo "0. Exit Tool"
         echo -e "${C_H}=========================================${C_R}"
@@ -77,7 +84,6 @@ menu_setup() {
                     pkg install curl wget termux-api -y
                     curl -sL https://raw.githubusercontent.com/offici5l/MiUnlockTool/main/.install | bash
                     
-                    # Double check after installation and launch
                     if command -v miunlock &> /dev/null; then
                         echo -e "${C_S}[✔] Installation Done! Launching MiUnlockTool...${C_R}"
                         echo -e "${C_W}[!] TIP: To exit MiUnlockTool and return here, press 'CTRL + C' (or Vol Down + C).${C_R}"
@@ -87,6 +93,77 @@ menu_setup() {
                         echo -e "${C_E}[!] Error: Setup finished but command path not refreshed.${C_R}"
                         echo -e "${C_I}[*] Please restart Termux or type 'miunlock' manually.${C_R}"
                     fi
+                fi
+                pause_menu
+                ;;
+            5)
+                clear
+                mkdir -p "$DL_DIR"
+                echo -e "${C_I}[*] Fetching Latest Magisk Manager...${C_R}"
+                MAGISK_URL=$(curl -s https://api.github.com/repos/topjohnwu/Magisk/releases/latest | grep "browser_download_url" | grep "\.apk" | cut -d '"' -f 4 | head -n 1)
+                
+                if [ -z "$MAGISK_URL" ]; then
+                    echo -e "${C_E}[!] Fetch Failed! Check internet connection.${C_R}"
+                else
+                    echo -e "${C_I}[*] Downloading to ZishanTherapy Folder...${C_R}"
+                    curl -L "$MAGISK_URL" -o "$DL_DIR/MagiskManager.apk"
+                    
+                    if [ -f "$DL_DIR/MagiskManager.apk" ]; then
+                        echo -e "${C_S}[✔] Download Done! Installing to connected device...${C_R}"
+                        termux-adb install -r "$DL_DIR/MagiskManager.apk"
+                        
+                        echo -e "${C_I}[*] Deleting APK from local storage...${C_R}"
+                        rm -f "$DL_DIR/MagiskManager.apk"
+                        echo -e "${C_S}[✔] Cleanup Successful!${C_R}"
+                    fi
+                fi
+                pause_menu
+                ;;
+            6)
+                clear
+                mkdir -p "$DL_DIR"
+                echo -e "${C_I}[*] Downloading Kitsune Mask...${C_R}"
+                curl -L "https://github.com/HuskyDG/magisk-files/releases/download/1c93a02d-v26.1/app-release.apk" -o "$DL_DIR/KitsuneMask.apk"
+                
+                if [ -f "$DL_DIR/KitsuneMask.apk" ]; then
+                    echo -e "${C_S}[✔] Download Done! Installing to connected device...${C_R}"
+                    termux-adb install -r "$DL_DIR/KitsuneMask.apk"
+                    
+                    echo -e "${C_I}[*] Deleting APK from local storage...${C_R}"
+                    rm -f "$DL_DIR/KitsuneMask.apk"
+                    echo -e "${C_S}[✔] Cleanup Successful!${C_R}"
+                fi
+                pause_menu
+                ;;
+            7)
+                clear
+                mkdir -p "$DL_DIR"
+                echo -e "${C_I}[*] Downloading Root Checker...${C_R}"
+                curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/root-checker-6-5-3.apk" -o "$DL_DIR/RootChecker.apk"
+                
+                if [ -f "$DL_DIR/RootChecker.apk" ]; then
+                    echo -e "${C_S}[✔] Download Done! Installing to connected device...${C_R}"
+                    termux-adb install -r "$DL_DIR/RootChecker.apk"
+                    
+                    echo -e "${C_I}[*] Deleting APK from local storage...${C_R}"
+                    rm -f "$DL_DIR/RootChecker.apk"
+                    echo -e "${C_S}[✔] Cleanup Successful!${C_R}"
+                fi
+                pause_menu
+                ;;
+            8)
+                clear
+                mkdir -p "$DL_DIR"
+                echo -e "${C_I}[*] Downloading MultipleAccounts...${C_R}"
+                curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/MultipleAccounts.apk" -o "$DL_DIR/MultipleAccounts.apk"
+                
+                if [ -f "$DL_DIR/MultipleAccounts.apk" ]; then
+                    echo -e "${C_S}[✔] Download Done! Installing to connected device...${C_R}"
+                    termux-adb install -r "$DL_DIR/MultipleAccounts.apk"
+                    
+                    echo -e "${C_I}[*] Deleting APK from local storage...${C_R}"
+                    rm -f "$DL_DIR/MultipleAccounts.apk"
+                    echo -e "${C_S}[✔] Cleanup Successful!${C_R}"
                 fi
                 pause_menu
                 ;;
@@ -264,85 +341,6 @@ menu_fastboot() {
 }
 
 # ==========================================
-# 4. DOWNLOAD MENU (Direct to Phone Storage)
-# ==========================================
-menu_download() {
-    while true; do
-        clear
-        echo -e "${C_H}=========================================${C_R}"
-        echo -e "${C_T}      DOWNLOAD MENU - Zishan Therapy     ${C_R}"
-        echo -e "${C_H}=========================================${C_R}"
-        echo "1. Download Root Checker (APK)"
-        echo "2. Download Kitsune Mask (APK)"
-        echo "3. Download Termux API (APK)"
-        echo "4. Download Termux App (APK)"
-        echo "5. Download MagiskHideProps Module (ZIP)"
-        echo "6. Download MultipleAccounts (APK)"
-        echo -e "${C_H}-----------------------------------------${C_R}"
-        echo "9. Back to Main Menu"
-        echo "0. Exit Tool"
-        echo -e "${C_H}=========================================${C_R}"
-        read -p "Enter your choice: " choice
-
-        # Create destination directory dynamically
-        mkdir -p "$DL_DIR"
-
-        case $choice in
-            1)
-                clear
-                echo -e "${C_I}[*] Downloading Root Checker APK...${C_R}"
-                curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/root-checker-6-5-3.apk" -o "$DL_DIR/RootChecker.apk"
-                echo -e "\n${C_S}[✔] File saved to: $DL_DIR/RootChecker.apk${C_R}"
-                pause_menu
-                ;;
-            2)
-                clear
-                echo -e "${C_I}[*] Downloading Kitsune Mask APK...${C_R}"
-                curl -L "https://github.com/HuskyDG/magisk-files/releases/download/1c93a02d-v26.1/app-release.apk" -o "$DL_DIR/KitsuneMask.apk"
-                echo -e "\n${C_S}[✔] File saved to: $DL_DIR/KitsuneMask.apk${C_R}"
-                pause_menu
-                ;;
-            3)
-                clear
-                echo -e "${C_I}[*] Downloading Termux API APK...${C_R}"
-                curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/com.termux.api_1002.apk" -o "$DL_DIR/TermuxAPI.apk"
-                echo -e "\n${C_S}[✔] File saved to: $DL_DIR/TermuxAPI.apk${C_R}"
-                pause_menu
-                ;;
-            4)
-                clear
-                echo -e "${C_I}[*] Downloading Termux App APK...${C_R}"
-                curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/com.termux_1022.apk" -o "$DL_DIR/Termux.apk"
-                echo -e "\n${C_S}[✔] File saved to: $DL_DIR/Termux.apk${C_R}"
-                pause_menu
-                ;;
-            5)
-                clear
-                echo -e "${C_I}[*] Downloading MagiskHideProps Module ZIP...${C_R}"
-                curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/MagiskHidePropsConf-v6.1.2.zip" -o "$DL_DIR/MagiskHideProps.zip"
-                echo -e "\n${C_S}[✔] File saved to: $DL_DIR/MagiskHideProps.zip${C_R}"
-                pause_menu
-                ;;
-            6)
-                clear
-                echo -e "${C_I}[*] Downloading MultipleAccounts APK...${C_R}"
-                curl -L "https://github.com/ZishanTherapyOwner/ZT-Files/releases/download/v1.0/MultipleAccounts.apk" -o "$DL_DIR/MultipleAccounts.apk"
-                echo -e "\n${C_S}[✔] File saved to: $DL_DIR/MultipleAccounts.apk${C_R}"
-                pause_menu
-                ;;
-            9)
-                break
-                ;;
-            0)
-                exit 0
-                ;;
-            *)
-                echo -e "${C_E}[!] Invalid Option!${C_R}" && sleep 2 ;;
-        esac
-    done
-}
-
-# ==========================================
 # MAIN MENU
 # ==========================================
 while true; do
@@ -353,7 +351,6 @@ while true; do
     echo "1. Termux Setup & Download Menu"
     echo "2. ADB Menu"
     echo "3. Fastboot Menu"
-    echo "4. Download Menu"
     echo -e "${C_H}-----------------------------------------${C_R}"
     echo "0. Exit Tool"
     echo -e "${C_H}=========================================${C_R}"
@@ -368,9 +365,6 @@ while true; do
             ;;
         3)
             menu_fastboot
-            ;;
-        4)
-            menu_download
             ;;
         0)
             clear
