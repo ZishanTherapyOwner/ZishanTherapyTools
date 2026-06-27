@@ -23,18 +23,18 @@ pause_menu() {
 }
 
 # ==========================================
-# 1. SETUP MENU
+# 1. TERMUX SETUP & DOWNLOAD MENU
 # ==========================================
 menu_setup() {
     while true; do
         clear
         echo -e "${C_H}=========================================${C_R}"
-        echo -e "${C_T}        SETUP MENU - Zishan Therapy       ${C_R}"
+        echo -e "${C_T}   TERMUX SETUP & DOWNLOAD MENU - ZT     ${C_R}"
         echo -e "${C_H}=========================================${C_R}"
         echo "1. Basic Termux Setup"
         echo "2. Install Platform Tools"
         echo "3. Termux Setup Storage"
-        echo "4. Install MiUnlockTool (Xiaomi)"
+        echo "4. MiUnlockTool Setup & Open"
         echo -e "${C_H}-----------------------------------------${C_R}"
         echo "9. Back to Main Menu"
         echo "0. Exit Tool"
@@ -65,10 +65,26 @@ menu_setup() {
                 ;;
             4)
                 clear
-                echo -e "${C_I}[*] Installing MiUnlockTool by offici5l...${C_R}"
-                pkg install curl wget termux-api -y
-                curl -sL https://raw.githubusercontent.com/offici5l/MiUnlockTool/main/.install | bash
-                echo -e "${C_S}[✔] Done!${C_R}"
+                # Checking if MiUnlockTool is already installed
+                if command -v miunlock &> /dev/null; then
+                    echo -e "${C_S}[✔] MiUnlockTool is already installed! Launching...${C_R}"
+                    sleep 1
+                    miunlock
+                else
+                    echo -e "${C_W}[!] MiUnlockTool not found! Installing now...${C_R}"
+                    pkg install curl wget termux-api -y
+                    curl -sL https://raw.githubusercontent.com/offici5l/MiUnlockTool/main/.install | bash
+                    
+                    # Double check after installation and launch
+                    if command -v miunlock &> /dev/null; then
+                        echo -e "${C_S}[✔] Installation Done! Launching MiUnlockTool...${C_R}"
+                        sleep 1
+                        miunlock
+                    else
+                        echo -e "${C_E}[!] Error: Setup finished but command path not refreshed.${C_R}"
+                        echo -e "${C_I}[*] Please restart Termux or type 'miunlock' manually.${C_R}"
+                    fi
+                fi
                 pause_menu
                 ;;
             9)
@@ -222,7 +238,12 @@ menu_fastboot() {
             5)
                 clear
                 echo -e "${C_I}[*] Launching MiUnlockTool...${C_R}"
-                miunlock
+                if command -v miunlock &> /dev/null; then
+                    miunlock
+                else
+                    echo -e "${C_E}[!] MiUnlockTool is not installed!${C_R}"
+                    echo -e "${C_I}[*] Please go to 'Termux Setup & Download Menu' and select option 4 first.${C_R}"
+                fi
                 pause_menu
                 ;;
             9)
@@ -324,7 +345,7 @@ while true; do
     echo -e "${C_H}=========================================${C_R}"
     echo -e "${C_T}             Zishan Therapy              ${C_R}"
     echo -e "${C_H}=========================================${C_R}"
-    echo "1. Setup Menu"
+    echo "1. Termux Setup & Download Menu"
     echo "2. ADB Menu"
     echo "3. Fastboot Menu"
     echo "4. Download Menu"
