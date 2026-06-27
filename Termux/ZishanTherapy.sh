@@ -10,6 +10,7 @@ C_O='\e[93m'      # Yellow Options
 C_S='\e[92m'      # Green Success
 C_E='\e[91m'      # Red Error
 C_I='\e[94m'      # Blue Info
+C_W='\e[95m'      # Magenta Warning
 
 # Target Download Directory on Phone Storage
 DL_DIR="/sdcard/Download/ZishanTherapy"
@@ -68,7 +69,8 @@ menu_setup() {
                 # Checking if MiUnlockTool is already installed
                 if command -v miunlock &> /dev/null; then
                     echo -e "${C_S}[✔] MiUnlockTool is already installed! Launching...${C_R}"
-                    sleep 1
+                    echo -e "${C_W}[!] TIP: To exit MiUnlockTool and return here, press 'CTRL + C' (or Vol Down + C).${C_R}"
+                    sleep 3
                     miunlock
                 else
                     echo -e "${C_W}[!] MiUnlockTool not found! Installing now...${C_R}"
@@ -78,7 +80,8 @@ menu_setup() {
                     # Double check after installation and launch
                     if command -v miunlock &> /dev/null; then
                         echo -e "${C_S}[✔] Installation Done! Launching MiUnlockTool...${C_R}"
-                        sleep 1
+                        echo -e "${C_W}[!] TIP: To exit MiUnlockTool and return here, press 'CTRL + C' (or Vol Down + C).${C_R}"
+                        sleep 3
                         miunlock
                     else
                         echo -e "${C_E}[!] Error: Setup finished but command path not refreshed.${C_R}"
@@ -239,6 +242,8 @@ menu_fastboot() {
                 clear
                 echo -e "${C_I}[*] Launching MiUnlockTool...${C_R}"
                 if command -v miunlock &> /dev/null; then
+                    echo -e "${C_W}[!] TIP: To exit MiUnlockTool and return here, press 'CTRL + C' (or Vol Down + C).${C_R}"
+                    sleep 3
                     miunlock
                 else
                     echo -e "${C_E}[!] MiUnlockTool is not installed!${C_R}"
