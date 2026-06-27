@@ -142,7 +142,7 @@ menu_download() {
                     echo -e "${C_S}[✔] MagiskManager.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process
+                # Install Process (NO AUTO DELETE)
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
                     termux-adb install -r "$APK_PATH"
@@ -160,7 +160,7 @@ menu_download() {
                     echo -e "${C_S}[✔] KitsuneMask.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process
+                # Install Process (NO AUTO DELETE)
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
                     termux-adb install -r "$APK_PATH"
@@ -178,7 +178,7 @@ menu_download() {
                     echo -e "${C_S}[✔] RootChecker.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process
+                # Install Process (NO AUTO DELETE)
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
                     termux-adb install -r "$APK_PATH"
@@ -196,7 +196,7 @@ menu_download() {
                     echo -e "${C_S}[✔] MultipleAccounts.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process
+                # Install Process (NO AUTO DELETE)
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
                     termux-adb install -r "$APK_PATH"
