@@ -89,14 +89,9 @@ menu_setup() {
                 fi
                 pause_menu
                 ;;
-            99)
-                break
-                ;;
-            0)
-                exit 0
-                ;;
-            *)
-                echo -e "${C_E}[!] Invalid Option!${C_R}" && sleep 2 ;;
+            99) break ;;
+            0) exit 0 ;;
+            *) echo -e "${C_E}[!] Invalid Option!${C_R}" && sleep 2 ;;
         esac
     done
 }
@@ -122,7 +117,6 @@ menu_download() {
         echo -ne "${C_O}Enter your choice:${C_R} "
         read choice
 
-        # Create destination directory dynamically
         mkdir -p "$DL_DIR"
 
         case $choice in
@@ -132,10 +126,7 @@ menu_download() {
                 if [ ! -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Fetching Latest Magisk Manager...${C_R}"
                     MAGISK_URL=$(curl -s https://api.github.com/repos/topjohnwu/Magisk/releases/latest | grep "browser_download_url" | grep "\.apk" | cut -d '"' -f 4 | head -n 1)
-                    
-                    if [ -z "$MAGISK_URL" ]; then
-                        echo -e "${C_E}[!] Fetch Failed! Check internet connection.${C_R}"
-                    else
+                    if [ -z "$MAGISK_URL" ]; then echo -e "${C_E}[!] Fetch Failed! Check internet connection.${C_R}"; else
                         echo -e "${C_I}[*] Downloading to ZishanTherapy Folder...${C_R}"
                         curl -L "$MAGISK_URL" -o "$APK_PATH"
                     fi
@@ -143,7 +134,6 @@ menu_download() {
                     echo -e "${C_S}[✔] MagiskManager.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
                     termux-adb install -r "$APK_PATH"
@@ -161,7 +151,6 @@ menu_download() {
                     echo -e "${C_S}[✔] KitsuneMask.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
                     termux-adb install -r "$APK_PATH"
@@ -179,7 +168,6 @@ menu_download() {
                     echo -e "${C_S}[✔] RootChecker.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG...${C_R}"
                     termux-adb install -r "$APK_PATH"
@@ -197,7 +185,6 @@ menu_download() {
                     echo -e "${C_S}[✔] MultipleAccounts.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process (Normal Mode)
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG (Normal)...${C_R}"
                     termux-adb install -r "$APK_PATH"
@@ -215,7 +202,6 @@ menu_download() {
                     echo -e "${C_S}[✔] MultipleAccounts.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process (Bypass Low SDK Mode)
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG (Bypass Low SDK)...${C_R}"
                     termux-adb install --bypass-low-target-sdk-block "$APK_PATH"
@@ -223,14 +209,9 @@ menu_download() {
                 fi
                 pause_menu
                 ;;
-            99)
-                break
-                ;;
-            0)
-                exit 0
-                ;;
-            *)
-                echo -e "${C_E}[!] Invalid Option!${C_R}" && sleep 2 ;;
+            99) break ;;
+            0) exit 0 ;;
+            *) echo -e "${C_E}[!] Invalid Option!${C_R}" && sleep 2 ;;
         esac
     done
 }
@@ -298,7 +279,6 @@ menu_adb() {
                 echo -e "${C_I}[*] Checking Root Access...${C_R}"
                 echo -e "${C_W}[!] PLEASE UNLOCK TARGET PHONE SCREEN AND TAP 'GRANT' IF PROMPTED!${C_R}\n"
 
-                # Check root on target device via ADB
                 termux-adb shell "su -c 'echo ROOT_GRANTED'" > root_check.tmp 2>/dev/null
                 if ! grep -q "ROOT_GRANTED" root_check.tmp; then
                     echo -e "${C_E}---------------------------------------------------${C_R}"
@@ -315,11 +295,8 @@ menu_adb() {
                 echo -e "${C_S}[✔] Root Access Confirmed!${C_R}"
                 echo -e "${C_I}[*] Injecting Magisk Boot Script...${C_R}\n"
 
-                # Apply immediately
                 termux-adb shell "su -c 'settings put global fw.max_users $user_count'"
                 termux-adb shell "su -c 'settings put global fw.show_multiuserui 1'"
-
-                # Inject post-fs-data.d script
                 termux-adb shell "su -c 'echo \"#!/system/bin/sh\" > /data/adb/post-fs-data.d/zt_multiuser.sh'"
                 termux-adb shell "su -c 'echo \"resetprop -n fw.max_users $user_count\" >> /data/adb/post-fs-data.d/zt_multiuser.sh'"
                 termux-adb shell "su -c 'echo \"resetprop -n fw.show_multiuserui 1\" >> /data/adb/post-fs-data.d/zt_multiuser.sh'"
@@ -342,7 +319,6 @@ menu_adb() {
                 echo -e "${C_I}[*] Fetching details from connected device...${C_R}"
                 echo -e "${C_H}---------------------------------------------------${C_R}"
                 
-                # Using 'tr -d '\r'' to format ADB shell getprop output correctly in bash
                 MODEL=$(termux-adb shell getprop ro.product.model | tr -d '\r')
                 DEVICE=$(termux-adb shell getprop ro.product.device | tr -d '\r')
                 VERSION=$(termux-adb shell getprop ro.build.version.release | tr -d '\r')
@@ -358,14 +334,253 @@ menu_adb() {
                 echo -e "${C_H}---------------------------------------------------${C_R}"
                 pause_menu
                 ;;
-            99)
-                break
+            99) break ;;
+            0) exit 0 ;;
+            *) echo -e "${C_E}[!] Invalid Option!${C_R}" && sleep 2 ;;
+        esac
+    done
+}
+
+# ==========================================
+# 4. FASTBOOT MENU
+# ==========================================
+menu_fastboot() {
+    while true; do
+        clear
+        echo -e "${C_H}=========================================${C_R}"
+        echo -e "${C_T}      FASTBOOT MENU - Zishan Therapy     ${C_R}"
+        echo -e "${C_H}=========================================${C_R}"
+        echo -e " ${C_O}[1]${C_R} Check Fastboot Devices"
+        echo -e "${C_H}-----------------------------------------${C_R}"
+        echo -e " ${C_O}[2]${C_R} Reboot to System"
+        echo -e " ${C_O}[3]${C_R} Reboot to Recovery"
+        echo -e " ${C_O}[4]${C_R} Reboot to Fastbootd (User space)"
+        echo -e " ${C_O}[5]${C_R} Reboot to Bootloader"
+        echo -e "${C_H}-----------------------------------------${C_R}"
+        echo -e " ${C_O}[6]${C_R} Get Product Name (getvar product)"
+        echo -e " ${C_O}[7]${C_R} Get Device Info (oem device-info)"
+        echo -e " ${C_O}[8]${C_R} Check Bootloader Status (Unlock State)"
+        echo -e " ${C_O}[9]${C_R} Get All Variables (getvar all)"
+        echo -e "${C_H}-----------------------------------------${C_R}"
+        echo -e " ${C_O}[10]${C_R} Bootloader Unlock (flashing unlock)"
+        echo -e "${C_H}-----------------------------------------${C_R}"
+        echo -e " ${C_O}[11]${C_R} Flash boot"
+        echo -e " ${C_O}[12]${C_R} Flash init_boot"
+        echo -e " ${C_O}[13]${C_R} Flash recovery"
+        echo -e " ${C_O}[14]${C_R} Flash vbmeta"
+        echo -e "${C_H}-----------------------------------------${C_R}"
+        echo -e " ${C_E}[15]${C_R} Factory Reset (fastboot -w)"
+        echo -e " ${C_E}[16]${C_R} Erase Userdata (fastboot erase userdata)"
+        echo -e " ${C_E}[17]${C_R} Erase FRP (fastboot erase frp)"
+        echo -e "${C_H}-----------------------------------------${C_R}"
+        echo -e " ${C_E}[99]${C_R} Back to Main Menu"
+        echo -e " ${C_E}[0]${C_R} Exit Tool"
+        echo -e "${C_H}=========================================${C_R}"
+        echo -ne "${C_O}Enter your choice:${C_R} "
+        read choice
+
+        case $choice in
+            1)
+                clear
+                echo -e "${C_I}[*] Checking connected Fastboot devices...${C_R}"
+                timeout 15s termux-fastboot devices
+                pause_menu
                 ;;
-            0)
-                exit 0
+            2)
+                clear
+                echo -e "${C_I}[*] Rebooting device to System...${C_R}"
+                timeout 15s termux-fastboot reboot
+                pause_menu
                 ;;
-            *)
-                echo -e "${C_E}[!] Invalid Option!${C_R}" && sleep 2 ;;
+            3)
+                clear
+                echo -e "${C_I}[*] Rebooting to Recovery Mode...${C_R}"
+                timeout 15s termux-fastboot reboot recovery
+                pause_menu
+                ;;
+            4)
+                clear
+                echo -e "${C_I}[*] Rebooting to Fastbootd (User space)...${C_R}"
+                timeout 15s termux-fastboot reboot fastboot
+                pause_menu
+                ;;
+            5)
+                clear
+                echo -e "${C_I}[*] Rebooting to Bootloader...${C_R}"
+                timeout 15s termux-fastboot reboot bootloader
+                pause_menu
+                ;;
+            6)
+                clear
+                echo -e "${C_I}[*] Getting Product Name...${C_R}"
+                timeout 15s termux-fastboot getvar product
+                pause_menu
+                ;;
+            7)
+                clear
+                echo -e "${C_I}[*] Getting OEM Device Info...${C_R}"
+                timeout 15s termux-fastboot oem device-info
+                pause_menu
+                ;;
+            8)
+                clear
+                echo -e "${C_H}===================================================${C_R}"
+                echo -e "${C_T}            CHECK BOOTLOADER UNLOCK STATUS         ${C_R}"
+                echo -e "${C_H}===================================================${C_R}"
+                echo ""
+                echo -e "${C_I}[*] Checking for connected fastboot device...${C_R}"
+                
+                timeout 15s termux-fastboot devices > fb_t.tmp 2>&1
+                if ! grep -q "fastboot" fb_t.tmp; then
+                    echo -e "${C_E}[!] Error: No fastboot device detected or connection timed out!${C_R}"
+                    rm -f fb_t.tmp; pause_menu; continue
+                fi
+                rm -f fb_t.tmp
+
+                echo -e "${C_S}[✔] Device detected! Fetching Unlock Status...${C_R}"
+                echo -e "${C_H}---------------------------------------------------${C_R}"
+                echo -e "${C_I}[*] Method 1 (Standard Android 'unlocked' state):${C_R}"
+                termux-fastboot getvar unlocked 2>&1 | grep -i "unlocked"
+                echo ""
+                echo -e "${C_I}[*] Method 2 (Secure boot state - 'yes' means locked):${C_R}"
+                termux-fastboot getvar secure 2>&1 | grep -i "secure"
+                echo ""
+                echo -e "${C_I}[*] Method 3 (Xiaomi / OEM Device Info):${C_R}"
+                termux-fastboot oem device-info 2>&1 | grep -i "unlock"
+                echo -e "${C_H}---------------------------------------------------${C_R}"
+                echo -e "${C_W}[!] Note: If any method says 'true' or 'yes' for unlocked (or 'no' for secure),${C_R}"
+                echo -e "${C_W}    your bootloader is UNLOCKED.${C_R}\n"
+                pause_menu
+                ;;
+            9)
+                clear
+                echo -e "${C_I}[*] Getting All Variables (getvar all)...${C_R}"
+                timeout 15s termux-fastboot getvar all
+                pause_menu
+                ;;
+            10)
+                clear
+                echo -e "${C_I}[*] Bootloader Unlock...${C_R}"
+                echo -e "${C_I}[*] Checking for connected fastboot device...${C_R}"
+                timeout 15s termux-fastboot devices > fb_t.tmp 2>&1
+                if ! grep -q "fastboot" fb_t.tmp; then
+                    echo -e "${C_E}[!] Error: No fastboot device detected or connection timed out!${C_R}"
+                    rm -f fb_t.tmp; pause_menu; continue
+                fi
+                rm -f fb_t.tmp
+                
+                echo -e "${C_S}[✔] Device detected!${C_R}"
+                echo -e "${C_W}[*] Running unlock command. Check phone screen...${C_R}"
+                termux-fastboot flashing unlock
+                pause_menu
+                ;;
+            11|12|13|14)
+                clear
+                part_name=""
+                img_name=""
+                
+                # Auto matching the files
+                if [ "$choice" == "11" ]; then part_name="boot"; img_name="boot.img"; fi
+                if [ "$choice" == "12" ]; then part_name="init_boot"; img_name="init_boot.img"; fi
+                if [ "$choice" == "13" ]; then part_name="recovery"; img_name="recovery.img"; fi
+                if [ "$choice" == "14" ]; then part_name="vbmeta"; img_name="vbmeta.img"; fi
+
+                IMG_PATH="$DL_DIR/$img_name"
+                
+                echo -e "${C_H}===================================================${C_R}"
+                echo -e "${C_T}             FLASH ${part_name^^} (Auto File System)             ${C_R}"
+                echo -e "${C_H}===================================================${C_R}"
+                echo ""
+                echo -e "${C_I}[*] Flashing $part_name from ZishanTherapy Folder...${C_R}"
+                
+                if [ ! -f "$IMG_PATH" ]; then
+                    echo -e "${C_E}[!] Error: '$img_name' not found in Downloads/ZishanTherapy folder!${C_R}"
+                    echo -e "${C_W}[!] Please put the exact file there and try again.${C_R}"
+                    pause_menu
+                    continue
+                fi
+
+                echo -e "${C_S}[✔] File found: $IMG_PATH${C_R}"
+                echo -e "${C_I}[*] Checking for connected fastboot device...${C_R}"
+                timeout 15s termux-fastboot devices > fb_t.tmp 2>&1
+                if ! grep -q "fastboot" fb_t.tmp; then
+                    echo -e "\n${C_E}[!] Error: No fastboot device detected or timed out!${C_R}"
+                    rm -f fb_t.tmp; pause_menu; continue
+                fi
+                rm -f fb_t.tmp
+
+                echo -e "${C_S}[✔] Device detected! Flashing $part_name...${C_R}"
+                if [ "$choice" == "14" ]; then
+                    termux-fastboot --disable-verity --disable-verification flash "$part_name" "$IMG_PATH"
+                else
+                    termux-fastboot flash "$part_name" "$IMG_PATH"
+                fi
+                echo -e "\n${C_S}[✔] Finished Successfully!${C_R}"
+                pause_menu
+                ;;
+            15)
+                clear
+                echo -e "${C_E}===================================================${C_R}"
+                echo -e "${C_E}             FACTORY RESET (fastboot -w)           ${C_R}"
+                echo -e "${C_E}===================================================${C_R}"
+                echo ""
+                echo -e "${C_E}[!] WARNING: This will WIPE ALL USER DATA on the device!${C_R}"
+                echo -ne "${C_O}Are you sure you want to proceed? (Y/N): ${C_R}"
+                read confirm
+                if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then continue; fi
+
+                timeout 15s termux-fastboot devices > fb_t.tmp 2>&1
+                if ! grep -q "fastboot" fb_t.tmp; then echo -e "${C_E}[!] No device detected!${C_R}"; rm -f fb_t.tmp; pause_menu; continue; fi
+                rm -f fb_t.tmp
+
+                echo -e "${C_S}[✔] Device detected! Wiping data...${C_R}"
+                termux-fastboot -w
+                echo -e "${C_S}[✔] Finished!${C_R}"
+                pause_menu
+                ;;
+            16)
+                clear
+                echo -e "${C_E}===================================================${C_R}"
+                echo -e "${C_E}       ERASE USERDATA (fastboot erase userdata)    ${C_R}"
+                echo -e "${C_E}===================================================${C_R}"
+                echo ""
+                echo -e "${C_E}[!] WARNING: This will ERASE USERDATA partition!${C_R}"
+                echo -ne "${C_O}Are you sure you want to proceed? (Y/N): ${C_R}"
+                read confirm
+                if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then continue; fi
+                
+                timeout 15s termux-fastboot devices > fb_t.tmp 2>&1
+                if ! grep -q "fastboot" fb_t.tmp; then echo -e "${C_E}[!] No device detected!${C_R}"; rm -f fb_t.tmp; pause_menu; continue; fi
+                rm -f fb_t.tmp
+
+                echo -e "${C_S}[✔] Device detected! Erasing userdata...${C_R}"
+                termux-fastboot erase userdata
+                echo -e "${C_S}[✔] Finished!${C_R}"
+                pause_menu
+                ;;
+            17)
+                clear
+                echo -e "${C_E}===================================================${C_R}"
+                echo -e "${C_E}           ERASE FRP (fastboot erase frp)          ${C_R}"
+                echo -e "${C_E}===================================================${C_R}"
+                echo ""
+                echo -e "${C_W}[!] Note: This command removes Google FRP Lock on supported devices.${C_R}"
+                echo -ne "${C_O}Are you sure you want to proceed? (Y/N): ${C_R}"
+                read confirm
+                if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then continue; fi
+                
+                timeout 15s termux-fastboot devices > fb_t.tmp 2>&1
+                if ! grep -q "fastboot" fb_t.tmp; then echo -e "${C_E}[!] No device detected!${C_R}"; rm -f fb_t.tmp; pause_menu; continue; fi
+                rm -f fb_t.tmp
+
+                echo -e "${C_S}[✔] Device detected! Erasing FRP...${C_R}"
+                termux-fastboot erase frp
+                echo -e "${C_S}[✔] Finished!${C_R}"
+                pause_menu
+                ;;
+            99) break ;;
+            0) exit 0 ;;
+            *) echo -e "${C_E}[!] Invalid Option!${C_R}" && sleep 2 ;;
         esac
     done
 }
@@ -381,6 +596,7 @@ while true; do
     echo "1. Termux Setup Menu"
     echo "2. Download & Install Menu"
     echo "3. ADB Menu"
+    echo "4. Fastboot Menu"
     echo -e "${C_H}-----------------------------------------${C_R}"
     echo -e " ${C_E}[0]${C_R} Exit Tool"
     echo -e "${C_H}=========================================${C_R}"
@@ -388,22 +604,11 @@ while true; do
     read main_choice
 
     case $main_choice in
-        1)
-            menu_setup
-            ;;
-        2)
-            menu_download
-            ;;
-        3)
-            menu_adb
-            ;;
-        0)
-            clear
-            echo -e "${C_I}Exiting Master Tool...${C_R}"
-            exit 0
-            ;;
-        *)
-            echo -e "${C_E}[!] Invalid Option!${C_R}" && sleep 2
-            ;;
+        1) menu_setup ;;
+        2) menu_download ;;
+        3) menu_adb ;;
+        4) menu_fastboot ;;
+        0) clear; echo -e "${C_I}Exiting Master Tool...${C_R}"; exit 0 ;;
+        *) echo -e "${C_E}[!] Invalid Option!${C_R}" && sleep 2 ;;
     esac
 done
