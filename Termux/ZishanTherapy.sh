@@ -215,12 +215,147 @@ menu_download() {
                     echo -e "${C_S}[✔] MultipleAccounts.apk already exists! Skipping download...${C_R}"
                 fi
 
-                # Install Process (Bypass Low SDK Mode for Android 14+)
+                # Install Process (Bypass Low SDK Mode)
                 if [ -f "$APK_PATH" ]; then
                     echo -e "${C_I}[*] Installing to connected device via OTG (Bypass Low SDK)...${C_R}"
                     termux-adb install --bypass-low-target-sdk-block "$APK_PATH"
                     echo -e "${C_S}[✔] Installation Process Finished!${C_R}"
                 fi
+                pause_menu
+                ;;
+            99)
+                break
+                ;;
+            0)
+                exit 0
+                ;;
+            *)
+                echo -e "${C_E}[!] Invalid Option!${C_R}" && sleep 2 ;;
+        esac
+    done
+}
+
+# ==========================================
+# 3. ADB MENU
+# ==========================================
+menu_adb() {
+    while true; do
+        clear
+        echo -e "${C_H}=========================================${C_R}"
+        echo -e "${C_T}         ADB MENU - Zishan Therapy       ${C_R}"
+        echo -e "${C_H}=========================================${C_R}"
+        echo -e " ${C_O}[1]${C_R} Check ADB Devices"
+        echo -e "${C_H}-----------------------------------------${C_R}"
+        echo -e " ${C_O}[2]${C_R} Reboot to System (Normal)"
+        echo -e " ${C_O}[3]${C_R} Reboot to Recovery"
+        echo -e " ${C_O}[4]${C_R} Reboot to Bootloader"
+        echo -e "${C_H}-----------------------------------------${C_R}"
+        echo -e " ${C_O}[5]${C_R} Enable Multiuser (Permanent via Magisk)"
+        echo -e " ${C_O}[6]${C_R} Get ADB Device Info (Version/Build)"
+        echo -e "${C_H}-----------------------------------------${C_R}"
+        echo -e " ${C_E}[99]${C_R} Back to Main Menu"
+        echo -e " ${C_E}[0]${C_R} Exit Tool"
+        echo -e "${C_H}=========================================${C_R}"
+        echo -ne "${C_O}Enter your choice:${C_R} "
+        read choice
+
+        case $choice in
+            1)
+                clear
+                echo -e "${C_I}[*] Checking connected ADB devices...${C_R}"
+                termux-adb devices
+                pause_menu
+                ;;
+            2)
+                clear
+                echo -e "${C_I}[*] Rebooting device to System...${C_R}"
+                termux-adb reboot
+                pause_menu
+                ;;
+            3)
+                clear
+                echo -e "${C_I}[*] Rebooting to Recovery Mode...${C_R}"
+                termux-adb reboot recovery
+                pause_menu
+                ;;
+            4)
+                clear
+                echo -e "${C_I}[*] Rebooting to Bootloader...${C_R}"
+                termux-adb reboot bootloader
+                pause_menu
+                ;;
+            5)
+                clear
+                echo -e "${C_H}===================================================${C_R}"
+                echo -e "${C_T}      ENABLE MULTIUSER (Permanent via Magisk)      ${C_R}"
+                echo -e "${C_H}===================================================${C_R}"
+                echo ""
+                echo -ne "${C_O}--> Enter maximum user limit (e.g., 4, 10, 100): ${C_R}"
+                read user_count
+                if [ -z "$user_count" ]; then user_count=4; fi
+
+                clear
+                echo -e "${C_I}[*] Checking Root Access...${C_R}"
+                echo -e "${C_W}[!] PLEASE UNLOCK TARGET PHONE SCREEN AND TAP 'GRANT' IF PROMPTED!${C_R}\n"
+
+                # Check root on target device via ADB
+                termux-adb shell "su -c 'echo ROOT_GRANTED'" > root_check.tmp 2>/dev/null
+                if ! grep -q "ROOT_GRANTED" root_check.tmp; then
+                    echo -e "${C_E}---------------------------------------------------${C_R}"
+                    echo -e "${C_E}[X] ERROR: Root Permission Denied or Timed Out!${C_R}"
+                    echo -e "${C_E}[!] Magisk did not get permission.${C_R}"
+                    echo -e "${C_E}Please try this option again and tap 'Grant' quickly.${C_R}"
+                    echo -e "${C_E}---------------------------------------------------${C_R}\n"
+                    rm -f root_check.tmp
+                    pause_menu
+                    continue
+                fi
+                rm -f root_check.tmp
+
+                echo -e "${C_S}[✔] Root Access Confirmed!${C_R}"
+                echo -e "${C_I}[*] Injecting Magisk Boot Script...${C_R}\n"
+
+                # Apply immediately
+                termux-adb shell "su -c 'settings put global fw.max_users $user_count'"
+                termux-adb shell "su -c 'settings put global fw.show_multiuserui 1'"
+
+                # Inject post-fs-data.d script
+                termux-adb shell "su -c 'echo \"#!/system/bin/sh\" > /data/adb/post-fs-data.d/zt_multiuser.sh'"
+                termux-adb shell "su -c 'echo \"resetprop -n fw.max_users $user_count\" >> /data/adb/post-fs-data.d/zt_multiuser.sh'"
+                termux-adb shell "su -c 'echo \"resetprop -n fw.show_multiuserui 1\" >> /data/adb/post-fs-data.d/zt_multiuser.sh'"
+                termux-adb shell "su -c 'chmod 755 /data/adb/post-fs-data.d/zt_multiuser.sh'"
+
+                echo -e "${C_S}---------------------------------------------------${C_R}"
+                echo -e "${C_S}[✔] Magisk Boot Script Injected Successfully!${C_R}"
+                echo -e "${C_I}[*] Rebooting device to apply permanent changes...${C_R}"
+                termux-adb reboot
+                echo -e "\n${C_S}[~] SUCCESS: Process finished! Device is restarting.${C_R}"
+                sleep 1
+                pause_menu
+                ;;
+            6)
+                clear
+                echo -e "${C_H}===================================================${C_R}"
+                echo -e "${C_T}                ADB DEVICE INFORMATION             ${C_R}"
+                echo -e "${C_H}===================================================${C_R}"
+                echo ""
+                echo -e "${C_I}[*] Fetching details from connected device...${C_R}"
+                echo -e "${C_H}---------------------------------------------------${C_R}"
+                
+                # Using 'tr -d '\r'' to format ADB shell getprop output correctly in bash
+                MODEL=$(termux-adb shell getprop ro.product.model | tr -d '\r')
+                DEVICE=$(termux-adb shell getprop ro.product.device | tr -d '\r')
+                VERSION=$(termux-adb shell getprop ro.build.version.release | tr -d '\r')
+                HARDWARE=$(termux-adb shell getprop ro.hardware | tr -d '\r')
+                BUILD=$(termux-adb shell getprop ro.build.display.id | tr -d '\r')
+
+                echo -e "${C_I}Device Model     : ${C_R}${MODEL}"
+                echo -e "${C_I}Product Code     : ${C_R}${DEVICE}"
+                echo -e "${C_I}Android Version  : ${C_R}${VERSION}"
+                echo -e "${C_I}Hardware/Board   : ${C_R}${HARDWARE}"
+                echo -e "${C_I}Build/OS Version : ${C_R}${BUILD}"
+                
+                echo -e "${C_H}---------------------------------------------------${C_R}"
                 pause_menu
                 ;;
             99)
@@ -245,6 +380,7 @@ while true; do
     echo -e "${C_H}=========================================${C_R}"
     echo "1. Termux Setup Menu"
     echo "2. Download & Install Menu"
+    echo "3. ADB Menu"
     echo -e "${C_H}-----------------------------------------${C_R}"
     echo -e " ${C_E}[0]${C_R} Exit Tool"
     echo -e "${C_H}=========================================${C_R}"
@@ -257,6 +393,9 @@ while true; do
             ;;
         2)
             menu_download
+            ;;
+        3)
+            menu_adb
             ;;
         0)
             clear
