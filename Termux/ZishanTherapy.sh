@@ -111,6 +111,8 @@ menu_download() {
         echo "4. Install MultipleAccounts (Normal)"
         echo "5. Install MultipleAccounts (Bypass Low SDK)"
         echo -e "${C_H}-----------------------------------------${C_R}"
+        echo "6. Download From GDrive (Link Paste)"
+        echo -e "${C_H}-----------------------------------------${C_R}"
         echo -e " ${C_E}[99]${C_R} Back to Main Menu"
         echo -e " ${C_E}[0]${C_R} Exit Tool"
         echo -e "${C_H}=========================================${C_R}"
@@ -206,6 +208,54 @@ menu_download() {
                     echo -e "${C_I}[*] Installing to connected device via OTG (Bypass Low SDK)...${C_R}"
                     termux-adb install --bypass-low-target-sdk-block "$APK_PATH"
                     echo -e "${C_S}[✔] Installation Process Finished!${C_R}"
+                fi
+                pause_menu
+                ;;
+            6)
+                clear
+                echo -e "${C_H}===================================================${C_R}"
+                echo -e "${C_T}             DOWNLOAD FROM GDRIVE                  ${C_R}"
+                echo -e "${C_H}===================================================${C_R}"
+                echo ""
+                echo -ne "${C_O}--> Paste your Google Drive Link: ${C_R}"
+                read gdrive_url
+                
+                if [ -z "$gdrive_url" ]; then
+                    echo -e "${C_E}[!] Invalid Input! Link is missing.${C_R}"
+                    pause_menu
+                    continue
+                fi
+
+                echo -ne "${C_O}--> Enter file name to save as (e.g. boot.img, ROM.zip): ${C_R}"
+                read file_name
+                
+                if [ -z "$file_name" ]; then
+                    echo -e "${C_E}[!] Invalid Input! Filename cannot be empty.${C_R}"
+                    pause_menu
+                    continue
+                fi
+
+                # Extract ID from GDrive Link
+                FILE_ID=$(echo "$gdrive_url" | sed -r 's/.*(\/d\/|id=)([a-zA-Z0-9_-]+).*/\2/')
+
+                if [ -z "$FILE_ID" ] || [ "$FILE_ID" == "$gdrive_url" ]; then
+                    echo -e "\n${C_E}[!] Could not extract File ID. Make sure it's a valid GDrive link!${C_R}"
+                else
+                    echo -e "\n${C_I}[*] Extracted ID: $FILE_ID${C_R}"
+                    echo -e "${C_I}[*] Processing Download... Please wait.${C_R}"
+
+                    # GDrive Large File Bypass Logic
+                    CONFIRM=$(curl -sc /tmp/cookie.txt "https://drive.google.com/uc?export=download&id=${FILE_ID}" | grep -oE 'confirm=[a-zA-Z0-9_-]+' | head -1)
+                    
+                    if [ -n "$CONFIRM" ]; then
+                        echo -e "${C_W}[!] Large file detected. Bypassing Google virus scan...${C_R}"
+                        curl -L -b /tmp/cookie.txt "https://drive.google.com/uc?export=download&${CONFIRM}&id=${FILE_ID}" -o "$DL_DIR/$file_name"
+                    else
+                        curl -L "https://drive.google.com/uc?export=download&id=${FILE_ID}" -o "$DL_DIR/$file_name"
+                    fi
+                    
+                    rm -f /tmp/cookie.txt
+                    echo -e "\n${C_S}[✔] Download Finished! File saved at: ${C_R}$DL_DIR/$file_name"
                 fi
                 pause_menu
                 ;;
@@ -479,7 +529,6 @@ menu_fastboot() {
                 part_name=""
                 img_name=""
                 
-                # Auto matching the files
                 if [ "$choice" == "11" ]; then part_name="boot"; img_name="boot.img"; fi
                 if [ "$choice" == "12" ]; then part_name="init_boot"; img_name="init_boot.img"; fi
                 if [ "$choice" == "13" ]; then part_name="recovery"; img_name="recovery.img"; fi
