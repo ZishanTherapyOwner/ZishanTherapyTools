@@ -226,15 +226,6 @@ menu_download() {
                     continue
                 fi
 
-                echo -ne "${C_O}--> Enter file name to save as (e.g. boot.img, ROM.zip): ${C_R}"
-                read file_name
-                
-                if [ -z "$file_name" ]; then
-                    echo -e "${C_E}[!] Invalid Input! Filename cannot be empty.${C_R}"
-                    pause_menu
-                    continue
-                fi
-
                 # Extract ID from GDrive Link
                 FILE_ID=$(echo "$gdrive_url" | sed -r 's/.*(\/d\/|id=)([a-zA-Z0-9_-]+).*/\2/')
 
@@ -242,20 +233,31 @@ menu_download() {
                     echo -e "\n${C_E}[!] Could not extract File ID. Make sure it's a valid GDrive link!${C_R}"
                 else
                     echo -e "\n${C_I}[*] Extracted ID: $FILE_ID${C_R}"
-                    echo -e "${C_I}[*] Processing Download... Please wait.${C_R}"
+                    echo -e "${C_I}[*] Fetching file details and bypassing limits...${C_R}"
 
-                    # GDrive Large File Bypass Logic
-                    CONFIRM=$(curl -sc /tmp/cookie.txt "https://drive.google.com/uc?export=download&id=${FILE_ID}" | grep -oE 'confirm=[a-zA-Z0-9_-]+' | head -1)
+                    cd "$DL_DIR" || exit
+
+                    # Step 1: Save the temporary HTML to extract the confirm token
+                    curl -sc /tmp/cookie.txt "https://drive.google.com/uc?export=download&id=${FILE_ID}" > /tmp/gdrive_page.html
                     
+                    # Step 2: Grab the hidden 'confirm=XXXX' token 
+                    CONFIRM=$(grep -o 'confirm=[^&"]*' /tmp/gdrive_page.html | cut -d= -f2 | head -n 1)
+
                     if [ -n "$CONFIRM" ]; then
                         echo -e "${C_W}[!] Large file detected. Bypassing Google virus scan...${C_R}"
-                        curl -L -b /tmp/cookie.txt "https://drive.google.com/uc?export=download&${CONFIRM}&id=${FILE_ID}" -o "$DL_DIR/$file_name"
+                        echo -e "${C_I}[*] Downloading original file. Please wait...${C_R}"
+                        # -O -J flags force curl to fetch original filename automatically
+                        curl -L -b /tmp/cookie.txt -O -J "https://drive.google.com/uc?export=download&confirm=${CONFIRM}&id=${FILE_ID}"
                     else
-                        curl -L "https://drive.google.com/uc?export=download&id=${FILE_ID}" -o "$DL_DIR/$file_name"
+                        echo -e "${C_I}[*] Downloading file...${C_R}"
+                        curl -L -b /tmp/cookie.txt -O -J "https://drive.google.com/uc?export=download&id=${FILE_ID}"
                     fi
                     
-                    rm -f /tmp/cookie.txt
-                    echo -e "\n${C_S}[✔] Download Finished! File saved at: ${C_R}$DL_DIR/$file_name"
+                    # Cleanup
+                    rm -f /tmp/cookie.txt /tmp/gdrive_page.html
+                    cd - > /dev/null
+                    
+                    echo -e "\n${C_S}[✔] Download Finished! Checked $DL_DIR for the file.${C_R}"
                 fi
                 pause_menu
                 ;;
