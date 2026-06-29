@@ -111,7 +111,7 @@ menu_download() {
         echo -e " ${C_O}[4]${C_R} Install MultipleAccounts (Normal)"
         echo -e " ${C_O}[5]${C_R} Install MultipleAccounts (Bypass Low SDK)"
         echo -e "${C_H}-----------------------------------------${C_R}"
-        echo -e " ${C_O}[6]${C_R} Download From GDrive (Link Paste)"
+        echo -e " ${C_O}[6]${C_R} Direct Download From Link"
         echo -e "${C_H}-----------------------------------------${C_R}"
         echo -e " ${C_E}[99]${C_R} Back to Main Menu"
         echo -e " ${C_E}[0]${C_R} Exit Tool"
@@ -214,53 +214,30 @@ menu_download() {
             6)
                 clear
                 echo -e "${C_H}===================================================${C_R}"
-                echo -e "${C_T}             DOWNLOAD FROM GDRIVE                  ${C_R}"
+                echo -e "${C_T}             DIRECT DOWNLOAD FROM LINK             ${C_R}"
                 echo -e "${C_H}===================================================${C_R}"
                 echo ""
-                echo -ne "${C_O}--> Paste your Google Drive Link: ${C_R}"
-                read gdrive_url
+                echo -ne "${C_O}--> Paste your Direct Download Link: ${C_R}"
+                read direct_url
                 
-                if [ -z "$gdrive_url" ]; then
+                if [ -z "$direct_url" ]; then
                     echo -e "${C_E}[!] Invalid Input! Link is missing.${C_R}"
                     pause_menu
                     continue
                 fi
 
-                # Extract ID from GDrive Link
-                FILE_ID=$(echo "$gdrive_url" | sed -r 's/.*(\/d\/|id=)([a-zA-Z0-9_-]+).*/\2/')
+                echo -e "\n${C_I}[*] Starting Download... Please wait.${C_R}"
+                
+                # Navigate to target directory to download directly there
+                cd "$DL_DIR" || exit
 
-                if [ -z "$FILE_ID" ] || [ "$FILE_ID" == "$gdrive_url" ]; then
-                    echo -e "\n${C_E}[!] Could not extract File ID. Make sure it's a valid GDrive link!${C_R}"
-                else
-                    echo -e "\n${C_I}[*] Extracted ID: $FILE_ID${C_R}"
-                    echo -e "${C_I}[*] Fetching file name from Google Drive...${C_R}"
-                    
-                    # Fetch Original Filename from GDrive
-                    FILE_NAME=$(curl -s "https://drive.google.com/file/d/${FILE_ID}/view" | sed -n 's/.*<title>\(.*\) - Google Drive.*/\1/p' | xargs)
-                    
-                    if [ -z "$FILE_NAME" ] || [[ "$FILE_NAME" == *"Meet Google Drive"* ]]; then
-                        FILE_NAME="ZT_Downloaded_File_${FILE_ID}"
-                    fi
-                    
-                    echo -e "${C_S}[✔] File Name Detected: $FILE_NAME${C_R}"
-                    echo -e "${C_I}[*] Starting Download... Please wait.${C_R}"
-
-                    # Download Logic (Bypass Virus Scan Warning for Large Files)
-                    curl -c /tmp/cookies.txt -s -L "https://drive.google.com/uc?export=download&id=${FILE_ID}" > /tmp/gdrive_temp
-                    
-                    # Check if the downloaded temp file is just an HTML warning page
-                    if grep -qi '<html' /tmp/gdrive_temp && grep -q 'confirm=' /tmp/gdrive_temp; then
-                        echo -e "${C_W}[!] Large file detected. Bypassing Google virus scan...${C_R}"
-                        CONFIRM=$(grep -o 'confirm=[^&"]*' /tmp/gdrive_temp | cut -d= -f2 | head -n 1)
-                        curl -b /tmp/cookies.txt -L "https://drive.google.com/uc?export=download&confirm=${CONFIRM}&id=${FILE_ID}" -o "$DL_DIR/$FILE_NAME"
-                    else
-                        # If it's a small file, the temp file is the actual file. Just move it!
-                        mv /tmp/gdrive_temp "$DL_DIR/$FILE_NAME"
-                    fi
-                    
-                    rm -f /tmp/cookies.txt /tmp/gdrive_temp
-                    echo -e "\n${C_S}[✔] Download Finished! File saved at: ${C_O}$DL_DIR/$FILE_NAME${C_R}"
-                fi
+                # Curl with -O (save with remote filename) and -J (use server header filename)
+                curl -L -O -J "$direct_url"
+                
+                # Go back to previous directory silently
+                cd - > /dev/null
+                
+                echo -e "\n${C_S}[✔] Download Finished! File saved in: ${C_O}$DL_DIR${C_R}"
                 pause_menu
                 ;;
             99) break ;;
