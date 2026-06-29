@@ -233,31 +233,33 @@ menu_download() {
                     echo -e "\n${C_E}[!] Could not extract File ID. Make sure it's a valid GDrive link!${C_R}"
                 else
                     echo -e "\n${C_I}[*] Extracted ID: $FILE_ID${C_R}"
-                    echo -e "${C_I}[*] Fetching file details and bypassing limits...${C_R}"
-
-                    cd "$DL_DIR" || exit
-
-                    # Step 1: Save the temporary HTML to extract the confirm token
-                    curl -sc /tmp/cookie.txt "https://drive.google.com/uc?export=download&id=${FILE_ID}" > /tmp/gdrive_page.html
+                    echo -e "${C_I}[*] Fetching file name from Google Drive...${C_R}"
                     
-                    # Step 2: Grab the hidden 'confirm=XXXX' token 
-                    CONFIRM=$(grep -o 'confirm=[^&"]*' /tmp/gdrive_page.html | cut -d= -f2 | head -n 1)
-
-                    if [ -n "$CONFIRM" ]; then
-                        echo -e "${C_W}[!] Large file detected. Bypassing Google virus scan...${C_R}"
-                        echo -e "${C_I}[*] Downloading original file. Please wait...${C_R}"
-                        # -O -J flags force curl to fetch original filename automatically
-                        curl -L -b /tmp/cookie.txt -O -J "https://drive.google.com/uc?export=download&confirm=${CONFIRM}&id=${FILE_ID}"
-                    else
-                        echo -e "${C_I}[*] Downloading file...${C_R}"
-                        curl -L -b /tmp/cookie.txt -O -J "https://drive.google.com/uc?export=download&id=${FILE_ID}"
+                    # Fetch Original Filename from GDrive
+                    FILE_NAME=$(curl -s "https://drive.google.com/file/d/${FILE_ID}/view" | sed -n 's/.*<title>\(.*\) - Google Drive.*/\1/p' | xargs)
+                    
+                    if [ -z "$FILE_NAME" ] || [[ "$FILE_NAME" == *"Meet Google Drive"* ]]; then
+                        FILE_NAME="ZT_Downloaded_File_${FILE_ID}"
                     fi
                     
-                    # Cleanup
-                    rm -f /tmp/cookie.txt /tmp/gdrive_page.html
-                    cd - > /dev/null
+                    echo -e "${C_S}[✔] File Name Detected: $FILE_NAME${C_R}"
+                    echo -e "${C_I}[*] Starting Download... Please wait.${C_R}"
+
+                    # Download Logic (Bypass Virus Scan Warning for Large Files)
+                    curl -c /tmp/cookies.txt -s -L "https://drive.google.com/uc?export=download&id=${FILE_ID}" > /tmp/gdrive_temp
                     
-                    echo -e "\n${C_S}[✔] Download Finished! Checked $DL_DIR for the file.${C_R}"
+                    # Check if the downloaded temp file is just an HTML warning page
+                    if grep -qi '<html' /tmp/gdrive_temp && grep -q 'confirm=' /tmp/gdrive_temp; then
+                        echo -e "${C_W}[!] Large file detected. Bypassing Google virus scan...${C_R}"
+                        CONFIRM=$(grep -o 'confirm=[^&"]*' /tmp/gdrive_temp | cut -d= -f2 | head -n 1)
+                        curl -b /tmp/cookies.txt -L "https://drive.google.com/uc?export=download&confirm=${CONFIRM}&id=${FILE_ID}" -o "$DL_DIR/$FILE_NAME"
+                    else
+                        # If it's a small file, the temp file is the actual file. Just move it!
+                        mv /tmp/gdrive_temp "$DL_DIR/$FILE_NAME"
+                    fi
+                    
+                    rm -f /tmp/cookies.txt /tmp/gdrive_temp
+                    echo -e "\n${C_S}[✔] Download Finished! File saved at: ${C_O}$DL_DIR/$FILE_NAME${C_R}"
                 fi
                 pause_menu
                 ;;
