@@ -10,21 +10,21 @@ main_menu() {
   while true; do
     clear
     echo -e "${CYAN}========================================${NC}"
-    printf "${GREEN}%*s${NC}\n" $(( (${#folderTitle} + 40) / 2 )) "ZishanTech"
+    echo -e "${CYAN}-------------- ${GREEN}ZishanTech ${CYAN}--------------${NC}"
     echo -e "${CYAN}========================================${NC}"
     echo -e "1. ${YELLOW}Master Setup${NC}"
 
-    echo -e "88. ${RED}Back (আগের মেনু)${NC}"
-    echo -e "99. ${CYAN}Home (প্রধান মেনু)${NC}"
-    echo -e "00. ${RED}Exit (বাহির হোন)${NC}"
+    echo -e "88. ${RED}Back${NC}"
+    echo -e "99. ${CYAN}Home${NC}"
+    echo -e "00. ${RED}Exit${NC}"
     echo -e "${CYAN}========================================${NC}"
     read -p "Choose an option: " choice
     case $choice in
         1)
             clear
             pkg update -y && pkg upgrade -y
-            curl -s https://raw.githubusercontent.com/nohajc/termux-adb/master/install.sh | bash
-            curl -s https://raw.githubusercontent.com/nohajc/termux-adb/master/install.sh | bash
+            yes | curl -s https://raw.githubusercontent.com/nohajc/termux-adb/master/install.sh | bash
+            yes | termux-setup-storage
             echo -e "\n\n${CYAN}Task Completed!${NC}"
             read -p "Press Enter to continue..." ;;
         88) echo -e "\n${YELLOW}Already in Home Menu!${NC}"; sleep 1 ;;
