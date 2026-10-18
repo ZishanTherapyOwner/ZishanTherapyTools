@@ -14,17 +14,15 @@ main_menu() {
     echo -e "${CYAN}========================================${NC}"
     echo -e "1. ${YELLOW}Master Setup${NC}"
 
-    echo -e "88. ${RED}Back${NC}"
-    echo -e "99. ${CYAN}Home${NC}"
-    echo -e "00. ${RED}Exit${NC}"
+    echo -e "88. ${RED}Back${NC}  |  99. ${CYAN}Home${NC}  |  00. ${RED}Exit${NC}"
     echo -e "${CYAN}========================================${NC}"
     read -p "Choose an option: " choice
     case $choice in
         1)
             clear
-            pkg update -y && pkg upgrade -y
-            yes | curl -s https://raw.githubusercontent.com/nohajc/termux-adb/master/install.sh | bash
-            yes | termux-setup-storage
+            DEBIAN_FRONTEND=noninteractive yes "Y" | pkg update -y && pkg upgrade -y -o Dpkg::Options::="--force-confnew"
+            yes "Y" | curl -s https://raw.githubusercontent.com/nohajc/termux-adb/master/install.sh | bash
+            yes "Y" | termux-setup-storage
             echo -e "\n\n${CYAN}Task Completed!${NC}"
             read -p "Press Enter to continue..." ;;
         88) echo -e "\n${YELLOW}Already in Home Menu!${NC}"; sleep 1 ;;
