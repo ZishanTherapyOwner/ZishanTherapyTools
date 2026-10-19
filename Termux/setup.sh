@@ -81,6 +81,8 @@ menu_3() {
     echo -e "${CYAN}------ ${BLUE}--- Bootloader Unlock ---${NC} ${CYAN}-------${NC}"
     echo -e "[${YELLOW}9${NC}] ${YELLOW}Unlock Bootloader (All Device)${NC}"
     echo -e "${CYAN}---------- ${BLUE}--- Flash Menu ---${NC} ${CYAN}----------${NC}"
+    echo -e "[${YELLOW}10${NC}] ${YELLOW}Flash boot${NC}"
+    echo -e "[${YELLOW}11${NC}] ${YELLOW}Flash init_boot${NC}"
 
     echo ""
     echo -e "[${RED}88${NC}] ${RED}Back${NC}   [${CYAN}99${NC}] ${CYAN}Home${NC}   [${RED}00${NC}] ${RED}Exit${NC}"
@@ -127,6 +129,16 @@ menu_3() {
         9)
             clear
             termux-fastboot flashing unlock
+            echo -e "\n\n${CYAN}Task Completed!${NC}"
+            read -p "Press Enter to continue..." ;;
+        10)
+            clear
+            echo -e "\n\033[0;36mFile manager theke image file select korun...\033[0m" && termux-storage-get temp_file_$$.tmp && timeout 10 termux-fastboot flash boot temp_file_$$.tmp; rm -f temp_file_$$.tmp
+            echo -e "\n\n${CYAN}Task Completed!${NC}"
+            read -p "Press Enter to continue..." ;;
+        11)
+            clear
+            echo -e "\n\033[0;36mFile manager theke image file select korun...\033[0m" && termux-storage-get temp_file_$$.tmp && timeout 10 termux-fastboot flash init_boot temp_file_$$.tmp; rm -f temp_file_$$.tmp
             echo -e "\n\n${CYAN}Task Completed!${NC}"
             read -p "Press Enter to continue..." ;;
         88) return ;;
