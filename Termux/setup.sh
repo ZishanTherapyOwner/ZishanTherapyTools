@@ -18,6 +18,8 @@ menu_2() {
     echo -e "[${YELLOW}2${NC}] ${YELLOW}Reboot Normal${NC}"
     echo -e "[${YELLOW}3${NC}] ${YELLOW}Reboot Recovey${NC}"
     echo -e "[${YELLOW}4${NC}] ${YELLOW}Reboot Bootloader${NC}"
+    echo -e "${CYAN}---------- ${BLUE}--- Extra Menu ---${NC} ${CYAN}----------${NC}"
+    echo -e "[${YELLOW}5${NC}] ${YELLOW}Check Device Info${NC}"
 
     echo ""
     echo -e "[${RED}88${NC}] ${RED}Back${NC}   [${CYAN}99${NC}] ${CYAN}Home${NC}   [${RED}00${NC}] ${RED}Exit${NC}"
@@ -42,6 +44,11 @@ menu_2() {
         4)
             clear
             yes "Y" | termux-adb reboot bootloader
+            echo -e "\n\n${CYAN}Task Completed!${NC}"
+            read -p "Press Enter to continue..." ;;
+        5)
+            clear
+            adb shell getprop | grep -e 'ro.product.model' -e 'ro.build.version.release' -e 'ro.build.display.id'
             echo -e "\n\n${CYAN}Task Completed!${NC}"
             read -p "Press Enter to continue..." ;;
         88) return ;;
