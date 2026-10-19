@@ -91,7 +91,7 @@ menu_3() {
     case $choice in
         1)
             clear
-            termux-fastboot devices
+            timeout 10 termux-fastboot devices
             echo -e "\n\n${CYAN}Task Completed!${NC}"
             read -p "Press Enter to continue..." ;;
         2)
