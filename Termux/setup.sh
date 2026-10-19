@@ -49,9 +49,9 @@ menu_2() {
         5)
             clear
             echo -e "\n--- Device Info ---"
-            echo "Model: $(termux-adb shell getprop ro.product.model)"
-            echo "Android: $(termux-adb shell getprop ro.build.version.release)"
-            echo "Build: $(termux-adb shell getprop ro.build.display.id)"
+            echo -e "Model: $(timeout 5 termux-adb shell getprop ro.product.model)"
+            echo -e "Android: $(timeout 5 termux-adb shell getprop ro.build.version.release)"
+            echo -e "Build: $(timeout 5 termux-adb shell getprop ro.build.display.id)"
             echo -e "\n\n${CYAN}Task Completed!${NC}"
             read -p "Press Enter to continue..." ;;
         88) return ;;
