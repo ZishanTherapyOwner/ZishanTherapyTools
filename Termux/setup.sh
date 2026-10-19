@@ -48,7 +48,10 @@ menu_2() {
             read -p "Press Enter to continue..." ;;
         5)
             clear
-            termux-adb shell getprop | grep -e 'ro.product.model' -e 'ro.build.version.release' -e 'ro.build.display.id'
+            echo -e "\n--- Device Info ---"
+            echo "Model: $(termux-adb shell getprop ro.product.model)"
+            echo "Android: $(termux-adb shell getprop ro.build.version.release)"
+            echo "Build: $(termux-adb shell getprop ro.build.display.id)"
             echo -e "\n\n${CYAN}Task Completed!${NC}"
             read -p "Press Enter to continue..." ;;
         88) return ;;
