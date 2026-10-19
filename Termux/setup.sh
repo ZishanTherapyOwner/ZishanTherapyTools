@@ -48,7 +48,7 @@ menu_2() {
             read -p "Press Enter to continue..." ;;
         5)
             clear
-            adb shell getprop | grep -e 'ro.product.model' -e 'ro.build.version.release' -e 'ro.build.display.id'
+            termux-adb shell getprop | grep -e 'ro.product.model' -e 'ro.build.version.release' -e 'ro.build.display.id'
             echo -e "\n\n${CYAN}Task Completed!${NC}"
             read -p "Press Enter to continue..." ;;
         88) return ;;
